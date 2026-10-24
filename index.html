@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sørburøy ekranas</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b1d2b">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@300;500;600&family=Source+Sans+3:wght@400;600&display=swap">
 <style>
@@ -87,6 +91,8 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw
 .sw-alert{font-size:1.15vw;font-weight:600;line-height:1.3}
 .sw-alert.calm{color:var(--kelp)} .sw-alert.warn{color:var(--lamp)} .sw-alert.bad{color:#ff8a7a}
 #swchart{width:100%;height:6vw;display:block;overflow:visible}
+.sw-waves{font-size:1.1vw;color:var(--ink-2)}
+.sw-waves b{color:var(--ink);font-family:var(--display);font-size:1.35vw;font-weight:500}
 .sw-axis{display:flex;justify-content:space-between;font-size:.9vw;color:var(--ink-2);font-variant-numeric:tabular-nums}
 
 /* calendar */
@@ -151,6 +157,14 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw
 .banner.hide{opacity:0}
 .tvmsg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:1.6vw;color:var(--ink-2);text-align:center;max-width:50vw}
 .tvhelp{position:absolute;left:1.4vw;bottom:1vw;font-size:.85vw;color:var(--ink-2)}
+/* phone / tablet held upright: one column, scaled up, scrollable */
+@media (orientation:portrait){
+  body{overflow-y:auto;overflow-x:hidden}
+  .screen{zoom:2.3;width:calc(100vw / 2.3);height:auto;min-height:calc(100vh / 2.3);grid-template-columns:1fr;grid-template-rows:auto;
+    padding-left:max(1.6vw,env(safe-area-inset-left,0px));padding-right:max(1.6vw,env(safe-area-inset-right,0px))}
+  .tide{grid-template-columns:1fr}
+  .hint,.foot{display:none}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -195,6 +209,7 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw
     <div class="seawind">
       <div class="sw-head"><span class="label">Vėjas jūroje · 4 val. kas 15 min</span><span class="sw-legend"><i class="lg-s"></i>vidutinis <i class="lg-g"></i>gūsiai</span></div>
       <div class="sw-alert" id="swalert"></div>
+      <div class="sw-waves" id="swwaves"></div>
       <svg id="swchart" viewBox="0 0 1000 300" preserveAspectRatio="none"></svg>
       <div class="sw-axis" id="swaxis"></div>
     </div>
@@ -344,6 +359,19 @@ function drawSeaWind(d){
   else { msg=`Per 4 val. vėjas pastovus: ${Math.round(Math.min(...sp))}–${Math.round(maxS)} m/s, gūsiai iki ${Math.round(maxG)} m/s.`; }
   cls=maxG>=14||maxS>=11?"bad":maxG>=10||maxS>=8?"warn":"calm";
   const el=$("swalert"); el.className="sw-alert "+cls; el.textContent=msg;
+}
+
+/* ---------- waves (Open-Meteo marine) ---------- */
+async function loadWaves(){
+  try{
+    const r=await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}&hourly=wave_height,wave_direction,wave_period&timeformat=unixtime&forecast_days=2`);
+    if(!r.ok) throw 0; const d=await r.json(), H=d.hourly, now=Date.now()/1e3;
+    let i=H.time.findIndex(t=>t+3600>now); if(i<0) throw 0;
+    const nx=[i,i+1,i+2,i+3,i+4].filter(k=>k<H.time.length&&H.wave_height[k]!=null);
+    const h0=H.wave_height[i], hmax=Math.max(...nx.map(k=>H.wave_height[k])), kmax=nx.find(k=>H.wave_height[k]===hmax);
+    const trend=hmax>=h0+.3?` · per 4 val. didės iki <b>${hmax.toFixed(1)} m</b> (~${fmtT(new Date(H.time[kmax]*1e3))})`:` · per 4 val. iki ${hmax.toFixed(1)} m`;
+    $("swwaves").innerHTML=`Bangos: <b>${h0.toFixed(1)} m</b>, periodas ${Math.round(H.wave_period[i])} s, iš ${dirName(H.wave_direction[i])}${trend}`;
+  }catch(e){ $("swwaves").textContent="Bangų prognozės šiuo metu nepavyko gauti."; }
 }
 
 /* ---------- tide ---------- */
@@ -669,7 +697,11 @@ addEventListener("keydown",e=>{
 
 /* ---------- start ---------- */
 drawCal(); setInterval(drawCal,60e3);
-loadWeather(); loadTide();
+loadWeather(); loadTide(); loadWaves();
+setInterval(loadWaves,30*60e3);
+// keep a phone/tablet screen awake while the page is open
+let wl=null;async function wake(){try{wl=await navigator.wakeLock?.request("screen");}catch(e){}}
+wake();document.addEventListener("visibilitychange",()=>{if(!document.hidden)wake();});addEventListener("click",wake,{once:true});
 setInterval(loadWeather,15*60e3);
 setInterval(loadTide,6*3600e3);
 setInterval(()=>{if(tides.length)drawTide()},60e3);
