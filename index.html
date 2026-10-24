@@ -223,12 +223,12 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
   -webkit-mask-image:linear-gradient(#000 85%,transparent);mask-image:linear-gradient(#000 85%,transparent)}
 .bday{font-size:calc(.85*var(--u));font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--kelp);margin-top:calc(.3*var(--u))}
 .bday span{color:var(--ink-2);margin-left:calc(.3*var(--u))}
-.brow{display:grid;grid-template-columns:calc(4*var(--u)) 1fr;gap:calc(.5*var(--u));align-items:baseline;font-size:calc(1*var(--u));padding:calc(.15*var(--u)) calc(.4*var(--u));border-radius:calc(.4*var(--u));background:rgba(255,255,255,.05)}
+.brow{display:grid;grid-template-columns:calc(4*var(--u)) 1fr auto;gap:calc(.5*var(--u));align-items:baseline;font-size:calc(1*var(--u));padding:calc(.15*var(--u)) calc(.4*var(--u));border-radius:calc(.4*var(--u));background:rgba(255,255,255,.05)}
 .brow .bt-t{font-family:var(--display);font-size:calc(1.35*var(--u));font-weight:500}
 .brow .bt-t s{font-size:calc(.85*var(--u));color:var(--ink-2);margin-left:calc(.25*var(--u))}
 .brow .bt-d{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brow .tm2{font-family:var(--display);font-weight:600}
-.brow .bt-c{grid-column:2;display:flex;flex-wrap:wrap;gap:calc(.3*var(--u))}
+.brow .bt-c{display:flex;gap:calc(.3*var(--u));white-space:nowrap}
 .brow.past{opacity:.4}
 .brow.st-ok{box-shadow:inset calc(.25*var(--u)) 0 0 var(--kelp)} .brow.st-late{box-shadow:inset calc(.25*var(--u)) 0 0 var(--lamp)} .brow.st-cx{box-shadow:inset calc(.25*var(--u)) 0 0 #ff6b6b}
 .cn{display:inline-block;font-size:calc(.85*var(--u));font-weight:600;border-radius:calc(.3*var(--u));padding:0 calc(.35*var(--u))}
@@ -285,7 +285,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
       <div class="grid" id="calgrid"></div>
       <div class="hols" id="hols"></div>
     </div>
-    <div class="boat"><div class="boat-head"><span class="label">Keltas 820 · Sørburøy ⇄ Dyrøy · jungtys Dyrøy</span><span class="label" id="boatupd"></span></div><div class="boatnote">Jungtys Dyrøy ⇄ Sistranda busstasjon iš Entur maršrutų planuoklio. 🚕 AtB taksi: <b>bestill.atb.no</b> / <b>02867</b>, ≥3 val. prieš (iki 10:00 – dieną prieš).</div><div class="boatlist" id="boat"></div></div>
+    <div class="boat"><div class="boat-head"><span class="label">Keltas 820 · Sørburøy ⇄ Dyrøy</span><span class="label" id="boatupd"></span></div><div class="boatlist" id="boat"></div></div>
   </section>
 
   <section class="wx panel">
@@ -367,7 +367,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261024230442";
+const BUILD="20261024230540";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -608,13 +608,9 @@ async function loadBoat(){
       const st=boatState(e.c,e.aim,e.exp), moved=e.c.realtime&&Math.abs(e.exp-e.aim)>=120e3;
       let what, conn="";
       if(e.kind==="out"){ what=`Sørburøy → Dyrøy <span class="tm2">${fmtT(e.dyArr)}</span>`;
-        conn=e.toSis?(e.toSis.flex?`<span class="cn taxi">🚕 ${e.toSis.line} užsakomas ${fmtT(e.toSis.dep)} → Sistranda ${fmtT(e.toSis.end)}</span>`
-            :`<span class="cn bus">🚌 ${e.toSis.line} ${fmtT(e.toSis.dep)} → Sistranda ${fmtT(e.toSis.end)}</span>`)
-          :e.taxi?`<span class="cn taxi">🚕 AtB taksi – užsakyti iki Sistranda</span>`:`<span class="cn need">🚕 autobuso nėra – užsakyk taksi iki Sistranda</span>`; }
+        conn=e.toSis&&!e.toSis.flex?"":`<span class="cn need">🚕 užsakyti taksi</span>`; }
       else { what=`Dyrøy → Sørburøy${e.arr?` <span class="tm2">${fmtT(e.arr)}</span>`:""}`;
-        conn=e.fromSis?(e.fromSis.flex?`<span class="cn taxi">🚕 ${e.fromSis.line} užsakomas iš Sistranda ${fmtT(e.fromSis.dep)}</span>`
-            :`<span class="cn bus">🚌 ${e.fromSis.line} iš Sistranda ${fmtT(e.fromSis.dep)} → Dyrøy ${fmtT(e.fromSis.end)}</span>`)
-          :`<span class="cn need">🚕 autobuso nėra – taksi iš Sistranda į Dyrøy</span>`; }
+        conn=e.fromSis&&!e.fromSis.flex?"":`<span class="cn need">🚕 užsakyti taksi</span>`; }
       html+=`<div class="brow ${st.cls}${e.exp<now?" past":""}"><span class="bt-t">${fmtT(moved?e.exp:e.aim)}${moved?`<s>${fmtT(e.aim)}</s>`:""}</span><span class="bt-d">${what}</span><span class="bt-c">${st.txt?`<span class="bt-s ${st.chip}">${st.txt}</span>`:""}${conn}</span></div>`;
     }
     $("boat").innerHTML=html||`<span style="color:var(--ink-2)">Artimiausių reisų nerasta.</span>`;
