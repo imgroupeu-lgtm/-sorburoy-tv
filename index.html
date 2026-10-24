@@ -195,7 +195,7 @@ table.wk{width:100%;border-collapse:separate;border-spacing:0 calc(.3*var(--u));
 .tvmsg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:calc(1.6*var(--u));color:var(--ink-2);text-align:center;max-width:calc(50*var(--u))}
 .tvhelp{position:absolute;left:calc(1.4*var(--u));bottom:calc(1*var(--u));font-size:calc(.85*var(--u));color:var(--ink-2)}
 /* sea forecast view */
-#sea{position:fixed;inset:0;z-index:4;padding:calc(2*var(--u)) calc(2.4*var(--u)) calc(1.6*var(--u));display:flex;flex-direction:column;gap:calc(1*var(--u))}
+#sea{position:fixed;inset:0;z-index:4;background:linear-gradient(180deg,rgba(6,18,30,.97),rgba(8,26,38,.97));overflow-y:auto;padding:calc(2*var(--u)) calc(2.4*var(--u)) calc(1.6*var(--u));display:flex;flex-direction:column;gap:calc(1*var(--u))}
 #sea .sea-head{display:flex;justify-content:space-between;align-items:baseline}
 #sea h2{margin:0;font-family:var(--display);font-weight:500;font-size:calc(2.4*var(--u))}
 .sea-tables{display:grid;grid-template-columns:1fr 1fr;gap:calc(1.2*var(--u));min-height:0}
@@ -241,8 +241,15 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 /* touch devices (phones, tablets): tap buttons instead of a remote */
 .touchnav{display:none;position:fixed;z-index:6;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));gap:8px}
 .touchnav button,.tvclose{font:600 15px/1 var(--body);color:var(--ink);background:rgba(7,22,32,.82);border:1px solid var(--glass-edge);border-radius:999px;padding:11px 16px;cursor:pointer}
+.seaclose{display:none;font:600 15px/1 var(--body);color:var(--ink);background:rgba(7,22,32,.82);border:1px solid var(--glass-edge);border-radius:999px;padding:11px 16px;cursor:pointer}
 .tvclose{display:none;position:absolute;z-index:7;right:max(12px,env(safe-area-inset-right,0px));top:calc(12px + env(safe-area-inset-top,0px))}
 .ch{cursor:pointer}
+@media (pointer:coarse) and (orientation:landscape){
+  #sea{--u:calc(1.55vw);padding:12px max(14px,env(safe-area-inset-right,0px)) 80px max(14px,env(safe-area-inset-left,0px))}
+  #sea .sea-tables{grid-template-columns:1fr}
+  #sea .back{display:none}
+  .seaclose{display:inline-block}
+}
 @media (pointer:coarse){
   .touchnav{display:flex}
   .tvclose{display:block}
@@ -343,7 +350,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 </nav>
 
 <section id="sea" hidden>
-  <div class="sea-head"><h2>Jūros prognozė · Sørburøya · dienos metu 06–20 val.</h2><span class="label back">◀ atgal</span></div>
+  <div class="sea-head"><h2>Jūros prognozė · Sørburøya · dienos metu 06–20 val.</h2><span class="label back">◀ atgal</span><button type="button" class="seaclose" id="seaclose">✕ Uždaryti</button></div>
   <div class="sea-legend">
     <span><i style="background:#7fdcc6"></i>iki 5 m/s</span><span><i style="background:#b9e48a"></i>5–8</span>
     <span><i style="background:#ffc766"></i>8–11</span><span><i style="background:#ff9f5a"></i>11–14</span><span><i style="background:#ff6b6b"></i>14+ m/s</span>
@@ -367,7 +374,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261024230930";
+const BUILD="20261024231302";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -666,7 +673,8 @@ let seaOn=false;
 function openSea(){ seaOn=true; $("sea").hidden=false; drawSea(); }
 function closeSea(){ seaOn=false; $("sea").hidden=true; }
 $("hint").addEventListener("click",e=>{ if(e.target.textContent.includes("▶")||!seaOn) openSea(); });
-$("sea").addEventListener("click",()=>{ if(!matchMedia("(orientation:portrait)").matches) closeSea(); });
+$("sea").addEventListener("click",()=>{ if(!matchMedia("(orientation:portrait)").matches && !matchMedia("(pointer:coarse)").matches) closeSea(); });
+$("seaclose").addEventListener("click",e=>{e.stopPropagation();closeSea();});
 
 /* ---------- tide ---------- */
 let tides=[];
