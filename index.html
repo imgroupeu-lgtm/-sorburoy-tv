@@ -79,6 +79,15 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw
 .hour .w{font-size:1vw;color:var(--ink-2)}
 .hour .p{font-size:.95vw;color:var(--kelp);min-height:1.3em}
 .icon{width:2.6vw;height:2.6vw}
+.seawind{display:flex;flex-direction:column;gap:.4vw;background:rgba(255,255,255,.05);border-radius:.9vw;padding:.9vw 1.1vw}
+.sw-head{display:flex;justify-content:space-between;align-items:baseline}
+.sw-legend{font-size:.85vw;color:var(--ink-2);display:flex;align-items:center;gap:.4vw}
+.sw-legend i{display:inline-block;width:.9vw;height:.45vw;border-radius:.2vw;margin-left:.5vw}
+.lg-s{background:var(--kelp)} .lg-g{background:none;border-top:2px solid var(--lamp);height:0!important}
+.sw-alert{font-size:1.3vw;font-weight:600;line-height:1.3}
+.sw-alert.calm{color:var(--kelp)} .sw-alert.warn{color:var(--lamp)} .sw-alert.bad{color:#ff8a7a}
+#swchart{width:100%;height:7.5vw;display:block;overflow:visible}
+.sw-axis{display:flex;justify-content:space-between;font-size:.9vw;color:var(--ink-2);font-variant-numeric:tabular-nums}
 
 /* calendar */
 .cal{display:flex;flex-direction:column;gap:.7vw}
@@ -183,6 +192,12 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw
       </div>
       <div class="detail" id="wdetail"></div>
     </div>
+    <div class="seawind">
+      <div class="sw-head"><span class="label">Vėjas jūroje · 4 val. kas 15 min</span><span class="sw-legend"><i class="lg-s"></i>vidutinis <i class="lg-g"></i>gūsiai</span></div>
+      <div class="sw-alert" id="swalert"></div>
+      <svg id="swchart" viewBox="0 0 1000 300" preserveAspectRatio="none"></svg>
+      <div class="sw-axis" id="swaxis"></div>
+    </div>
     <div>
       <div class="label" style="margin-bottom:.5vw">Artimiausios valandos</div>
       <div class="hours" id="hours"></div>
@@ -268,7 +283,7 @@ function set(id,html){const el=$(id);if(el.innerHTML!==html){el.innerHTML=html;e
 async function loadWeather(){
   try{
     const u=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}`+
-      `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,is_day,cloud_cover,precipitation`+
+      `&minutely_15=wind_speed_10m,wind_gusts_10m,wind_direction_10m&forecast_minutely_15=24&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,is_day,cloud_cover,precipitation`+
       `&hourly=temperature_2m,weather_code,wind_speed_10m,precipitation,is_day&daily=sunrise,sunset,daylight_duration,weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max`+
       `&wind_speed_unit=ms&timezone=${encodeURIComponent(TZ)}&forecast_days=7&timeformat=unixtime`;
     const r=await fetch(u); if(!r.ok) throw new Error(r.status);
@@ -296,6 +311,7 @@ async function loadWeather(){
     $("sunset").textContent=fmtT(S.sunset);
     const dl=d.daily.daylight_duration[0];
     $("daylen").textContent=`${Math.floor(dl/3600)} val ${Math.round(dl%3600/60)} min`;
+    drawSeaWind(d);
     const D=d.daily, lo=Math.min(...D.temperature_2m_min), hi=Math.max(...D.temperature_2m_max), span=(hi-lo)||1;
     $("week").innerHTML=D.time.map((t,i)=>{
       const day=i===0?"Šiandien":new Date(t*1e3+12*3600e3).toLocaleDateString("lt-LT",{timeZone:TZ,weekday:"short"});
@@ -306,6 +322,41 @@ async function loadWeather(){
         <span class="ww">${Math.round(D.wind_speed_10m_max[i])} m/s</span></div>`;}).join("");
     $("upd").textContent="atnaujinta "+fmtT(new Date());
   }catch(e){ $("cond").innerHTML=`<span class="err">Orų nepavyko gauti. Bandysiu vėl po 5 min.</span>`; setTimeout(loadWeather,300000); }
+}
+
+/* ---------- sea wind, next 4 h in 15-min steps ---------- */
+function windColor(v){return v<5?"#7fdcc6":v<8?"#b9e48a":v<11?"#ffc766":v<14?"#ff9f5a":"#ff6b6b";}
+function drawSeaWind(d){
+  const M=d.minutely_15; if(!M||!M.time){ $("swalert").textContent="15 min. vėjo duomenų šiuo metu nėra."; return; }
+  const now=Date.now()/1e3; let i0=M.time.findIndex(t=>t+900>now); if(i0<0)i0=0;
+  const idx=[...Array(17).keys()].map(k=>i0+k).filter(i=>i<M.time.length);
+  const sp=idx.map(i=>M.wind_speed_10m[i]), gu=idx.map(i=>M.wind_gusts_10m[i]), dr=idx.map(i=>M.wind_direction_10m[i]);
+  const top=Math.max(15,Math.ceil(Math.max(...gu)/5)*5), n=idx.length, bw=1000/n;
+  const Y=v=>290-v/top*250;
+  let s="";
+  for(let v=5;v<top;v+=5){s+=`<line x1="0" x2="1000" y1="${Y(v)}" y2="${Y(v)}" stroke="rgba(255,255,255,.12)" stroke-dasharray="4 6" vector-effect="non-scaling-stroke"/>
+    <text x="4" y="${Y(v)-4}" font-size="20" fill="rgba(232,242,245,.6)" font-family="Source Sans 3,Arial">${v}</text>`;}
+  idx.forEach((_,k)=>{
+    const x=k*bw+bw*.18, w=bw*.64;
+    s+=`<rect x="${x}" y="${Y(sp[k])}" width="${w}" height="${290-Y(sp[k])}" rx="4" fill="${windColor(sp[k])}" opacity="${k===0?1:.85}"/>`;
+    s+=`<line x1="${x}" x2="${x+w}" y1="${Y(gu[k])}" y2="${Y(gu[k])}" stroke="var(--lamp)" stroke-width="3" vector-effect="non-scaling-stroke"/>`;
+  });
+  $("swchart").innerHTML=s;
+  // direction arrows + values as HTML row (keeps arrows round on a stretched svg)
+  $("swaxis").innerHTML=idx.map((i,k)=>k%2?"":`<span style="display:flex;flex-direction:column;align-items:center;gap:.1vw;width:${200/n}%">
+    <svg viewBox="-10 -10 20 20" style="width:1.2vw;height:1.2vw;transform:rotate(${dr[k]+180}deg)"><path d="M0,-8 L5,6 L0,3 L-5,6Z" fill="var(--ink)"/></svg>
+    <b style="font-family:var(--display);font-size:1.15vw;color:${windColor(sp[k])}">${Math.round(sp[k])}</b>
+    <span>${fmtT(new Date(M.time[i]*1e3))}</span></span>`).join("");
+  // plain-language alert for going out to sea
+  const cur=sp[0], maxS=Math.max(...sp), maxG=Math.max(...gu), kMax=sp.indexOf(maxS);
+  const kRise=sp.findIndex(v=>v>=cur+3);
+  const tAt=k=>fmtT(new Date(M.time[idx[k]]*1e3));
+  let msg, cls;
+  if(kRise>0){ msg=`Vėjas kils: nuo ${Math.round(cur)} m/s iki ${Math.round(maxS)} m/s apie ${tAt(kMax)} (pradės stiprėti ~${tAt(kRise)}). Gūsiai iki ${Math.round(maxG)} m/s.`; }
+  else if(maxS<=cur-3){ msg=`Vėjas silps: iki ${Math.round(Math.min(...sp))} m/s per 4 val. Gūsiai iki ${Math.round(maxG)} m/s.`; }
+  else { msg=`Per 4 val. vėjas pastovus: ${Math.round(Math.min(...sp))}–${Math.round(maxS)} m/s, gūsiai iki ${Math.round(maxG)} m/s.`; }
+  cls=maxG>=14||maxS>=11?"bad":maxG>=10||maxS>=8?"warn":"calm";
+  const el=$("swalert"); el.className="sw-alert "+cls; el.textContent=msg;
 }
 
 /* ---------- tide ---------- */
