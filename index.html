@@ -121,13 +121,13 @@ table.wk{width:100%;border-collapse:separate;border-spacing:0 calc(.3*var(--u));
 .wk .gst{font-family:var(--display);font-size:calc(1.3*var(--u));margin-left:calc(.4*var(--u));color:var(--ink)}
 .wk .pr{color:var(--kelp)}
 /* calendar */
-.cal{display:flex;flex-direction:column;gap:calc(.7*var(--u))}
+.cal{display:flex;flex-direction:column;gap:calc(.35*var(--u))}
 .cal-head{display:flex;justify-content:space-between;align-items:baseline}
-.cal-month{font-family:var(--display);font-size:calc(2.1*var(--u));font-weight:500;text-transform:capitalize}
+.cal-month{font-family:var(--display);font-size:calc(1.6*var(--u));font-weight:500;text-transform:capitalize}
 .grid{display:grid;grid-template-columns:calc(2.2*var(--u)) repeat(7,1fr);gap:calc(.2*var(--u));text-align:center;font-variant-numeric:tabular-nums}
 .grid .dh{font-size:calc(.85*var(--u));font-weight:600;letter-spacing:.08em;color:var(--ink-2);padding-bottom:calc(.25*var(--u))}
 .grid .wk{font-size:calc(.85*var(--u));color:var(--ink-2);opacity:.7;align-self:center}
-.grid .d{font-family:var(--display);font-size:calc(1.4*var(--u));font-weight:500;padding:calc(.3*var(--u)) 0;border-radius:calc(.45*var(--u));position:relative}
+.grid .d{font-family:var(--display);font-size:calc(1.2*var(--u));font-weight:500;padding:calc(.1*var(--u)) 0;border-radius:calc(.45*var(--u));position:relative}
 .grid .d.out{opacity:.3}
 .grid .d.sun{color:var(--lamp)}
 .grid .d.hol{color:var(--kelp)}
@@ -374,7 +374,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261024225453";
+const BUILD="20261024225606";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -788,7 +788,7 @@ function drawCal(){
     }
   }
   $("calgrid").innerHTML=html;
-  const next=H.filter(h=>h.k>=tk).sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:a.cc<b.cc?-1:1).slice(0,3);
+  const next=H.filter(h=>h.k>=tk).sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:a.cc<b.cc?-1:1).slice(0,2);
   $("hols").innerHTML=`<span class="label">Artimiausios šventės</span>`+next.map(h=>{
     const dt=new Date(h.k+"T12:00:00Z"), dd=Math.round((dt-today)/86400e3-.5);
     const when=dd===0?"Šiandien":dt.toLocaleDateString("lt-LT",{month:"short",day:"numeric",timeZone:"UTC"});
