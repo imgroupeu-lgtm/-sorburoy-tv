@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sørburøy ekranas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@300;500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: living sky over Froan drawn on a canvas behind everything; three glass columns (clock | weather | calendar) and a tide band over the animated sea */
+:root{
+  --ink:#f5f9fa;                     /* primary text over sky */
+  --ink-2:rgba(232,242,245,.74);     /* secondary text */
+  --kelp:#7fdcc6;                    /* water, tide, holidays */
+  --lamp:#ffc766;                    /* sun, gusts, Sundays */
+  --glass:rgba(7,22,32,.40);         /* panel fill */
+  --glass-edge:rgba(255,255,255,.14);
+  --display:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Source Sans 3","Segoe UI",Arial,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw;overflow:hidden;cursor:none;
+  text-shadow:0 .08vw .5vw rgba(0,10,20,.35)}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+.screen{position:relative;z-index:1;height:100%;display:grid;
+  grid-template-columns:1fr 1.15fr .95fr;grid-template-rows:1fr auto;gap:1.6vw;padding:2.4vw 3vw 2vw}
+.panel{background:var(--glass);border:1px solid var(--glass-edge);border-radius:1.2vw;padding:1.6vw 1.8vw;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);min-width:0}
+.label{font-size:.85vw;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2)}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums}
+.fade{animation:fadeIn .9s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(.4vw)}to{opacity:1;transform:none}}
+
+/* clock */
+.clock{display:flex;flex-direction:column;justify-content:center;gap:.9vw}
+.time{font-family:var(--display);font-weight:300;font-size:9.5vw;line-height:.85;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.time .sec{font-size:3vw;color:var(--ink-2);margin-left:.5vw;font-weight:500}
+.minbar{height:.3vw;border-radius:.3vw;background:rgba(255,255,255,.15);overflow:hidden}
+.minbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--kelp),var(--lamp));transition:width 1s linear}
+.date{font-size:1.9vw;font-weight:600;text-transform:capitalize}
+.sun{display:flex;gap:1.8vw;margin-top:.6vw;font-size:1.3vw}
+.sun b{font-family:var(--display);font-weight:500;color:var(--lamp);font-size:2vw;display:block}
+.phase{font-size:1.2vw;color:var(--ink-2)}
+
+/* weather */
+.wx{display:flex;flex-direction:column;gap:1.3vw}
+.now{display:grid;grid-template-columns:auto 1fr;gap:1.8vw;align-items:center}
+.temp{font-family:var(--display);font-weight:300;font-size:7.5vw;line-height:.9}
+.temp sup{font-size:2.8vw;color:var(--ink-2);vertical-align:top;position:relative;top:.7vw}
+.cond{font-size:1.9vw;font-weight:600}
+.feels{color:var(--ink-2);font-size:1.25vw;margin-top:.3vw}
+.wind{display:flex;align-items:center;gap:1.4vw;background:rgba(255,255,255,.07);border-radius:.9vw;padding:1vw 1.3vw}
+.compass{width:5vw;height:5vw;flex:none;overflow:visible}
+#arrow{transition:transform 2s cubic-bezier(.3,.7,.2,1)}
+#arrowWob{animation:wob 3s ease-in-out infinite;transform-origin:0 0}
+@keyframes wob{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+.wind .speed{font-family:var(--display);font-size:3.8vw;font-weight:500;line-height:1;white-space:nowrap}
+.wind .speed small{font-size:1.4vw;color:var(--ink-2);margin-left:.4vw}
+.wind .detail{font-size:1.2vw;color:var(--ink-2);line-height:1.5}
+.wind .detail b{color:var(--lamp);font-weight:600}
+.wind .beau{font-size:1.25vw;font-weight:600}
+.hours{display:grid;grid-template-columns:repeat(6,1fr);gap:.5vw}
+.hour{display:flex;flex-direction:column;align-items:center;gap:.2vw;padding:.6vw 0;border-radius:.7vw;background:rgba(255,255,255,.05)}
+.hour .h{font-size:1.05vw;color:var(--ink-2)}
+.hour .t{font-family:var(--display);font-size:1.9vw;font-weight:500}
+.hour .w{font-size:1vw;color:var(--ink-2)}
+.hour .p{font-size:.95vw;color:var(--kelp);min-height:1.3em}
+.icon{width:2.6vw;height:2.6vw}
+
+/* calendar */
+.cal{display:flex;flex-direction:column;gap:.7vw}
+.cal-head{display:flex;justify-content:space-between;align-items:baseline}
+.cal-month{font-family:var(--display);font-size:2.1vw;font-weight:500;text-transform:capitalize}
+.grid{display:grid;grid-template-columns:2.2vw repeat(7,1fr);gap:.2vw;text-align:center;font-variant-numeric:tabular-nums}
+.grid .dh{font-size:.85vw;font-weight:600;letter-spacing:.08em;color:var(--ink-2);padding-bottom:.25vw}
+.grid .wk{font-size:.85vw;color:var(--ink-2);opacity:.7;align-self:center}
+.grid .d{font-family:var(--display);font-size:1.4vw;font-weight:500;padding:.3vw 0;border-radius:.45vw;position:relative}
+.grid .d.out{opacity:.3}
+.grid .d.sun{color:var(--lamp)}
+.grid .d.hol{color:var(--kelp)}
+.grid .d.hol::after{content:"";position:absolute;left:50%;bottom:.1vw;width:.32vw;height:.32vw;margin-left:-.16vw;border-radius:50%;background:var(--kelp)}
+.grid .d.today{background:var(--ink);color:#0b2233;text-shadow:none;box-shadow:0 0 1.2vw rgba(255,255,255,.45)}
+.hols{display:flex;flex-direction:column;gap:.3vw;margin-top:.3vw}
+.hl{display:grid;grid-template-columns:4.6vw 2.4vw 1fr;gap:.6vw;font-size:1.1vw;align-items:baseline}
+.hl .when{font-family:var(--display);font-size:1.35vw;font-weight:500}
+.hl .cc{font-size:.78vw;font-weight:600;letter-spacing:.1em;color:#0b2233;text-shadow:none;background:var(--kelp);border-radius:.3vw;text-align:center;padding:.1vw 0}
+.hl .cc.lt{background:var(--lamp)}
+.hl .nm{color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* tide */
+.tide{grid-column:1 / -1;display:grid;grid-template-columns:1fr 25vw;gap:2vw;align-items:end}
+.tide svg{width:100%;height:11vw;display:block;overflow:visible}
+.tidelist{display:flex;flex-direction:column;gap:.45vw}
+.tl{display:grid;grid-template-columns:5.5vw 1fr auto;align-items:baseline;gap:.8vw;font-size:1.35vw}
+.tl .k{font-weight:600}
+.tl .k.high{color:var(--kelp)}
+.tl .k.low{color:var(--ink-2)}
+.tl .v{font-family:var(--display);font-size:1.9vw;font-weight:500}
+.tl .c{color:var(--ink-2);font-size:1.1vw}
+.tl.past{opacity:.45}
+.tl.next{animation:glow 2.4s ease-in-out infinite}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:.7}}
+.tidehead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3vw}
+.status{font-size:1.35vw;font-weight:600;color:var(--kelp)}
+.pulse{animation:pulse 2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.8);opacity:.35}}
+.foot{position:fixed;z-index:2;right:3vw;bottom:.5vw;font-size:.75vw;color:var(--ink-2);opacity:.75}
+.err{color:var(--lamp);font-size:1.2vw}
+.hint{position:fixed;z-index:2;left:3vw;bottom:.5vw;font-size:.85vw;color:var(--ink-2)}
+.hint kbd{font-family:var(--body);font-weight:600;color:var(--ink);background:rgba(255,255,255,.14);border-radius:.3vw;padding:0 .4vw}
+
+/* TV mode */
+#tv{position:fixed;inset:0;z-index:5;background:#000;display:flex}
+#tv video,#tv iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.chlist{position:absolute;left:0;top:0;bottom:0;width:27vw;padding:2vw 1.4vw;display:flex;flex-direction:column;gap:.3vw;
+  background:linear-gradient(90deg,rgba(4,14,22,.94),rgba(4,14,22,.82) 80%,rgba(4,14,22,0));overflow:hidden;transition:transform .35s ease,opacity .35s ease}
+.chlist.hide{transform:translateX(-100%);opacity:0}
+.chgroup{font-size:.85vw;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--kelp);margin-top:.7vw}
+.ch{display:grid;grid-template-columns:2.4vw 1fr auto;gap:.6vw;align-items:baseline;font-size:1.35vw;padding:.38vw .8vw;border-radius:.5vw;color:var(--ink-2)}
+.ch .n{font-family:var(--display);color:var(--ink-2)}
+.ch .src{font-size:.75vw;letter-spacing:.1em;color:var(--ink-2);opacity:.7}
+.ch.sel{background:var(--ink);color:#0b2233;text-shadow:none}
+.ch.sel .n,.ch.sel .src{color:#0b2233}
+.ch.on:not(.sel){color:var(--ink)}
+.ch.on:not(.sel)::after{content:"";}
+.banner{position:absolute;right:3vw;top:2.4vw;background:rgba(4,14,22,.78);border-radius:.8vw;padding:.9vw 1.4vw;display:flex;gap:1vw;align-items:baseline;transition:opacity .5s}
+.banner .bn{font-family:var(--display);font-size:2.6vw;font-weight:500}
+.banner .bt{font-size:1.2vw;color:var(--ink-2)}
+.banner.hide{opacity:0}
+.tvmsg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:1.6vw;color:var(--ink-2);text-align:center;max-width:50vw}
+.tvhelp{position:absolute;left:1.4vw;bottom:1vw;font-size:.85vw;color:var(--ink-2)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<main class="screen">
+  <section class="clock panel">
+    <div class="label">Sørburøya · Froan</div>
+    <div class="time" id="time">--:--</div>
+    <div class="minbar"><i id="minbar"></i></div>
+    <div class="date" id="date"></div>
+    <div class="phase" id="phase"></div>
+    <div class="sun">
+      <div><span class="label">Saulėtekis</span><b id="sunrise">--:--</b></div>
+      <div><span class="label">Saulėlydis</span><b id="sunset">--:--</b></div>
+      <div><span class="label">Dienos ilgis</span><b id="daylen">--</b></div>
+    </div>
+  </section>
+
+  <section class="wx panel">
+    <div class="now">
+      <div class="temp num" id="temp">--<sup>°C</sup></div>
+      <div>
+        <div class="cond" id="cond">Kraunama…</div>
+        <div class="feels" id="feels"></div>
+      </div>
+    </div>
+    <div class="wind">
+      <svg class="compass" viewBox="-50 -50 100 100" aria-hidden="true">
+        <circle r="46" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="3"/>
+        <circle r="46" fill="none" stroke="var(--lamp)" stroke-width="3" stroke-dasharray="4 10" opacity=".35"/>
+        <text y="-31" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)" font-family="Source Sans 3,Arial">Š</text>
+        <g id="arrow"><g id="arrowWob"><path d="M0,-30 L11,14 L0,6 L-11,14 Z" fill="var(--lamp)"/></g></g>
+      </svg>
+      <div>
+        <div class="speed num" id="wspeed">--<small>m/s</small></div>
+        <div class="beau" id="beau"></div>
+      </div>
+      <div class="detail" id="wdetail"></div>
+    </div>
+    <div>
+      <div class="label" style="margin-bottom:.5vw">Artimiausios valandos</div>
+      <div class="hours" id="hours"></div>
+    </div>
+  </section>
+
+  <section class="cal panel">
+    <div class="cal-head"><span class="cal-month" id="calmonth"></span><span class="label" id="calweek"></span></div>
+    <div class="grid" id="calgrid"></div>
+    <div class="hols" id="hols"></div>
+  </section>
+
+  <section class="tide panel">
+    <div>
+      <div class="tidehead"><span class="label">Potvynis ir atoslūgis · cm nuo jūrlapio nulio</span><span class="status" id="tstatus"></span></div>
+      <svg id="tidechart" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="tidelist" id="tidelist"></div>
+  </section>
+</main>
+<div class="foot">Orai: Open-Meteo (MET Norway modelis) · Potvyniai: Kartverket, CC BY 4.0 · <span id="upd"></span></div>
+<div class="hint">Spausk <kbd>OK</kbd> – televizija</div>
+
+<div id="tv" hidden>
+  <video id="vid" autoplay playsinline></video>
+  <iframe id="yt" hidden allow="autoplay; encrypted-media" title="YouTube"></iframe>
+  <div class="tvmsg" id="tvmsg"></div>
+  <div class="banner hide" id="banner"><span class="bn" id="bname"></span><span class="bt" id="btext"></span></div>
+  <nav class="chlist" id="chlist"></nav>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
+
+<script>
+const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
+const $=id=>document.getElementById(id);
+const fmtT=d=>d.toLocaleTimeString("lt-LT",{timeZone:TZ,hour:"2-digit",minute:"2-digit"});
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* shared live state that drives the sky */
+const S={wind:4,dir:225,cloud:50,precip:0,code:2,sunrise:null,sunset:null,tide:.5};
+
+/* ---------- clock ---------- */
+function tick(){
+  const n=new Date();
+  const p=new Intl.DateTimeFormat("lt-LT",{timeZone:TZ,hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).formatToParts(n);
+  const g=t=>p.find(x=>x.type===t).value;
+  $("time").innerHTML=`${g("hour")}:${g("minute")}<span class="sec">${g("second")}</span>`;
+  $("minbar").style.width=(+g("second")/59*100)+"%";
+  $("date").textContent=n.toLocaleDateString("lt-LT",{timeZone:TZ,weekday:"long",month:"long",day:"numeric"});
+}
+tick();setInterval(tick,1000);
+
+/* ---------- weather ---------- */
+const WMO={0:"Giedra",1:"Daugiausia giedra",2:"Debesuota su pragiedruliais",3:"Apsiniaukę",45:"Rūkas",48:"Rūkas su šerkšnu",
+51:"Silpna dulksna",53:"Dulksna",55:"Stipri dulksna",56:"Lijundra",57:"Stipri lijundra",61:"Silpnas lietus",63:"Lietus",65:"Smarkus lietus",
+66:"Šąlantis lietus",67:"Stiprus šąlantis lietus",71:"Silpnas sniegas",73:"Sninga",75:"Smarkiai sninga",77:"Sniego kruopos",
+80:"Trumpi lietūs",81:"Lietūs",82:"Liūtys",85:"Trumpas snygis",86:"Smarkus snygis",95:"Perkūnija",96:"Perkūnija su kruša",99:"Stipri perkūnija su kruša"};
+const DIRS=["Š","ŠŠR","ŠR","RŠR","R","RPR","PR","PPR","P","PPV","PV","VPV","V","VŠV","ŠV","ŠŠV"];
+const dirName=d=>DIRS[Math.round(((d%360)+360)%360/22.5)%16];
+const BEAU=[[0.5,"Štilis"],[1.6,"Labai silpnas vėjas"],[3.4,"Silpnas vėjas"],[5.5,"Nestiprus vėjas"],[8,"Vidutinis vėjas"],[10.8,"Gana stiprus vėjas"],
+[13.9,"Stiprus vėjas"],[17.2,"Labai stiprus vėjas"],[20.8,"Audringas vėjas"],[24.5,"Audra"],[28.5,"Smarki audra"],[32.7,"Labai smarki audra"],[999,"Uraganas"]];
+const beau=v=>{const i=BEAU.findIndex(b=>v<b[0]);return `${i} balai · ${BEAU[i][1]}`};
+const isSnow=c=>(c>=71&&c<=77)||c===85||c===86;
+const isRain=c=>(c>=51&&c<=67)||(c>=80&&c<=82)||c>=95;
+
+function icon(code,isDay){
+  const sun=`<circle cx="20" cy="18" r="7" fill="var(--lamp)"/>`;
+  const moon=`<path d="M24 10a9 9 0 1 0 6 15 7 7 0 0 1-6-15z" fill="#dfe8ee"/>`;
+  const cloud=`<path d="M10 30a7 7 0 0 1 1-14 9 9 0 0 1 17 2 6 6 0 0 1 2 12z" fill="#f5f9fa" opacity=".9"/>`;
+  const rain=`<path d="M14 34l-2 4M21 34l-2 4M28 34l-2 4" stroke="var(--kelp)" stroke-width="2.4" stroke-linecap="round"/>`;
+  const snow=`<g fill="#ffffff"><circle cx="13" cy="36" r="1.6"/><circle cx="20" cy="37" r="1.6"/><circle cx="27" cy="36" r="1.6"/></g>`;
+  let s="";
+  if(code<=1) s=isDay?sun:moon;
+  else if(code===2) s=(isDay?sun:moon)+cloud;
+  else if(code<=48) s=cloud;
+  else if(isSnow(code)) s=cloud+snow;
+  else s=cloud+rain;
+  return `<svg class="icon" viewBox="0 0 40 40" aria-hidden="true">${s}</svg>`;
+}
+function set(id,html){const el=$(id);if(el.innerHTML!==html){el.innerHTML=html;el.classList.remove("fade");void el.offsetWidth;el.classList.add("fade");}}
+
+async function loadWeather(){
+  try{
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}`+
+      `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,is_day,cloud_cover,precipitation`+
+      `&hourly=temperature_2m,weather_code,wind_speed_10m,precipitation,is_day&daily=sunrise,sunset,daylight_duration`+
+      `&wind_speed_unit=ms&timezone=${encodeURIComponent(TZ)}&forecast_days=2&timeformat=unixtime`;
+    const r=await fetch(u); if(!r.ok) throw new Error(r.status);
+    const d=await r.json(), c=d.current;
+    Object.assign(S,{wind:c.wind_speed_10m,dir:c.wind_direction_10m,cloud:c.cloud_cover,precip:c.precipitation,code:c.weather_code,
+      sunrise:new Date(d.daily.sunrise[0]*1e3),sunset:new Date(d.daily.sunset[0]*1e3)});
+    set("temp",`${Math.round(c.temperature_2m)}<sup>°C</sup>`);
+    set("cond",WMO[c.weather_code]||"—");
+    $("feels").textContent=`Jaučiasi kaip ${Math.round(c.apparent_temperature)}°C · debesuotumas ${Math.round(c.cloud_cover)} %`;
+    set("wspeed",`${c.wind_speed_10m.toFixed(1)}<small>m/s</small>`);
+    $("beau").textContent=beau(c.wind_speed_10m);
+    $("wdetail").innerHTML=`Pučia iš <b style="color:var(--ink)">${dirName(c.wind_direction_10m)}</b> (${Math.round(c.wind_direction_10m)}°)<br>Gūsiai iki <b>${c.wind_gusts_10m.toFixed(1)} m/s</b>`;
+    $("arrow").style.transform=`rotate(${c.wind_direction_10m+180}deg)`;
+    $("arrowWob").style.animationDuration=Math.max(.8,4-c.wind_gusts_10m/8)+"s";
+    const now=Date.now()/1e3, start=d.hourly.time.findIndex(t=>t>now);
+    let html="";
+    for(let i=start;i<start+6&&i<d.hourly.time.length;i++){
+      const pr=d.hourly.precipitation[i], hh=new Date(d.hourly.time[i]*1e3);
+      html+=`<div class="hour"><span class="h">${fmtT(hh)}</span>${icon(d.hourly.weather_code[i],d.hourly.is_day[i])}
+        <span class="t num">${Math.round(d.hourly.temperature_2m[i])}°</span><span class="w">${Math.round(d.hourly.wind_speed_10m[i])} m/s</span>
+        <span class="p">${pr>0?pr.toFixed(1)+" mm":""}</span></div>`;
+    }
+    $("hours").innerHTML=html;
+    $("sunrise").textContent=fmtT(S.sunrise);
+    $("sunset").textContent=fmtT(S.sunset);
+    const dl=d.daily.daylight_duration[0];
+    $("daylen").textContent=`${Math.floor(dl/3600)} val ${Math.round(dl%3600/60)} min`;
+    $("upd").textContent="atnaujinta "+fmtT(new Date());
+  }catch(e){ $("cond").innerHTML=`<span class="err">Orų nepavyko gauti. Bandysiu vėl po 5 min.</span>`; setTimeout(loadWeather,300000); }
+}
+
+/* ---------- tide ---------- */
+let tides=[];
+async function loadTide(){
+  try{
+    const now=new Date(), from=new Date(now-14*3600e3), to=new Date(+now+40*3600e3);
+    const f=d=>d.toISOString().slice(0,16);
+    const u=`https://vannstand.kartverket.no/tideapi.php?tide_request=locationdata&lat=${LAT}&lon=${LON}&datatype=tab&refcode=cd`+
+      `&fromtime=${f(from)}&totime=${f(to)}&lang=nb&interval=10&dst=1&tzone=1`;
+    const r=await fetch(u); if(!r.ok) throw new Error(r.status);
+    const x=new DOMParser().parseFromString(await r.text(),"text/xml");
+    tides=[...x.querySelectorAll("waterlevel")].map(w=>({t:new Date(w.getAttribute("time")),v:+w.getAttribute("value"),high:w.getAttribute("flag")==="high"}));
+    if(tides.length<2) throw new Error("no data");
+    drawTide();
+  }catch(e){ $("tidelist").innerHTML=`<span class="err">Potvynių duomenų nepavyko gauti. Bandysiu vėl po 10 min.</span>`; setTimeout(loadTide,600000); }
+}
+function levelAt(t){ // cosine interpolation between successive high/low extremes
+  for(let i=0;i<tides.length-1;i++){
+    const a=tides[i],b=tides[i+1];
+    if(t>=a.t&&t<=b.t){const k=(t-a.t)/(b.t-a.t);return a.v+(b.v-a.v)*(1-Math.cos(Math.PI*k))/2;}
+  }
+  return null;
+}
+function drawTide(){
+  const now=new Date(), t0=new Date(+now-6*3600e3), t1=new Date(+now+30*3600e3);
+  const vals=tides.map(x=>x.v), vmin=Math.min(...vals), vmax=Math.max(...vals), lo=vmin-20, hi=vmax+20;
+  const X=t=>(t-t0)/(t1-t0)*1000, Y=v=>190-(v-lo)/(hi-lo)*170;
+  let pts=[];
+  for(let t=+t0;t<=+t1;t+=10*60e3){const v=levelAt(new Date(t));if(v!=null)pts.push([X(new Date(t)),Y(v)]);}
+  const line=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+","+p[1].toFixed(1)).join("");
+  const area=pts.length?line+`L${pts.at(-1)[0].toFixed(1)},200L${pts[0][0].toFixed(1)},200Z`:"";
+  let svg=`<defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fdcc6" stop-opacity=".55"/><stop offset="1" stop-color="#7fdcc6" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#tg)"/><path d="${line}" fill="none" stroke="var(--kelp)" stroke-width="3" vector-effect="non-scaling-stroke"/>`;
+  const md=new Date(now.toLocaleString("en-US",{timeZone:TZ}));
+  for(let k=0;k<3;k++){
+    const m=new Date(+now-(md.getHours()*3600e3+md.getMinutes()*60e3+md.getSeconds()*1e3)+k*86400e3);
+    if(m>t0&&m<t1){svg+=`<line x1="${X(m)}" x2="${X(m)}" y1="0" y2="200" stroke="rgba(255,255,255,.22)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>`;}
+  }
+  const nv=levelAt(now);
+  if(nv!=null){
+    S.tide=(nv-vmin)/(vmax-vmin||1);
+    svg+=`<line x1="${X(now)}" x2="${X(now)}" y1="0" y2="200" stroke="var(--lamp)" stroke-width="2" stroke-dasharray="6 6" vector-effect="non-scaling-stroke"/>`;
+  }
+  $("tidechart").innerHTML=svg;
+  // pulsing "now" dot as HTML-free overlay: drawn in a second svg layer with non-stretched circle
+  if(nv!=null){
+    const svgEl=$("tidechart"), w=svgEl.clientWidth, h=svgEl.clientHeight;
+    const cx=X(now)/1000*w, cy=Y(nv)/200*h;
+    svgEl.insertAdjacentHTML("afterend","");
+    let dot=document.getElementById("nowdot");
+    if(!dot){dot=document.createElementNS("http://www.w3.org/2000/svg","svg");dot.id="nowdot";
+      dot.setAttribute("style","position:absolute;pointer-events:none;overflow:visible");svgEl.parentNode.style.position="relative";svgEl.parentNode.appendChild(dot);}
+    dot.style.left=(svgEl.offsetLeft)+"px";dot.style.top=(svgEl.offsetTop)+"px";dot.setAttribute("width",w);dot.setAttribute("height",h);
+    dot.innerHTML=`<circle class="pulse" cx="${cx}" cy="${cy}" r="${w/160}" fill="var(--lamp)" opacity=".5"/><circle cx="${cx}" cy="${cy}" r="${w/220}" fill="var(--lamp)"/>`;
+  }
+  const nextIdx=tides.findIndex(x=>x.t>now);
+  if(nextIdx>0&&nv!=null){
+    const nx=tides[nextIdx], mins=Math.round((nx.t-now)/60e3);
+    $("tstatus").textContent=`Dabar ~${Math.round(nv)} cm · ${nx.high?"kyla":"slūgsta"} · ${nx.high?"potvynis":"atoslūgis"} po ${Math.floor(mins/60)} val ${mins%60} min`;
+  }
+  const list=tides.slice(Math.max(0,nextIdx-1),nextIdx+4);
+  $("tidelist").innerHTML=list.map(x=>{
+    const past=x.t<now, isNext=x===tides[nextIdx];
+    const day=x.t.toLocaleDateString("lt-LT",{timeZone:TZ,weekday:"short"});
+    return `<div class="tl${past?" past":""}${isNext?" next":""}"><span class="k ${x.high?"high":"low"}">${x.high?"Potvynis":"Atoslūgis"}</span>
+      <span class="v num">${fmtT(x.t)}</span><span class="c">${day} · ${Math.round(x.v)} cm</span></div>`;
+  }).join("");
+}
+
+/* ---------- calendar (no account, holidays computed locally) ---------- */
+function easter(y){ // Anonymous Gregorian algorithm
+  const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),
+  h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),
+  mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;
+  return new Date(Date.UTC(y,mo-1,da));
+}
+const key=(y,m,d)=>`${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+const addD=(dt,n)=>new Date(+dt+n*86400e3);
+const keyOf=dt=>key(dt.getUTCFullYear(),dt.getUTCMonth()+1,dt.getUTCDate());
+function firstSunday(y,m){const d=new Date(Date.UTC(y,m-1,1));return addD(d,(7-d.getUTCDay())%7);}
+function holidays(y){
+  const E=easter(y),H=[];
+  const no=(k,n)=>H.push({k,n,cc:"NO"}), lt=(k,n)=>H.push({k,n,cc:"LT"});
+  no(key(y,1,1),"Første nyttårsdag");
+  no(keyOf(addD(E,-3)),"Skjærtorsdag"); no(keyOf(addD(E,-2)),"Langfredag");
+  no(keyOf(E),"Første påskedag"); no(keyOf(addD(E,1)),"Andre påskedag");
+  no(key(y,5,1),"Arbeidernes dag"); no(key(y,5,17),"Grunnlovsdag");
+  no(keyOf(addD(E,39)),"Kristi himmelfartsdag"); no(keyOf(addD(E,49)),"Første pinsedag"); no(keyOf(addD(E,50)),"Andre pinsedag");
+  no(key(y,12,25),"Første juledag"); no(key(y,12,26),"Andre juledag");
+  lt(key(y,1,1),"Naujieji metai"); lt(key(y,2,16),"Valstybės atkūrimo diena"); lt(key(y,3,11),"Nepriklausomybės atkūrimo diena");
+  lt(keyOf(E),"Velykos"); lt(keyOf(addD(E,1)),"Antroji Velykų diena"); lt(key(y,5,1),"Darbo diena");
+  lt(keyOf(firstSunday(y,5)),"Motinos diena"); lt(keyOf(firstSunday(y,6)),"Tėvo diena");
+  lt(key(y,6,24),"Joninės"); lt(key(y,7,6),"Valstybės diena"); lt(key(y,8,15),"Žolinė");
+  lt(key(y,11,1),"Visų šventųjų diena"); lt(key(y,11,2),"Vėlinės");
+  lt(key(y,12,24),"Kūčios"); lt(key(y,12,25),"Kalėdos"); lt(key(y,12,26),"Antroji Kalėdų diena");
+  return H;
+}
+function isoWeek(dt){const d=new Date(Date.UTC(dt.getUTCFullYear(),dt.getUTCMonth(),dt.getUTCDate()));const day=d.getUTCDay()||7;
+  d.setUTCDate(d.getUTCDate()+4-day);const y0=new Date(Date.UTC(d.getUTCFullYear(),0,1));return Math.ceil(((d-y0)/86400e3+1)/7);}
+function osloToday(){const p=new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()).split("-").map(Number);
+  return new Date(Date.UTC(p[0],p[1]-1,p[2]));}
+let calKey="";
+function drawCal(){
+  const today=osloToday(), tk=keyOf(today); if(tk===calKey) return; calKey=tk;
+  const y=today.getUTCFullYear(), m=today.getUTCMonth();
+  const H=[...holidays(y),...holidays(y+1)], hset=new Set(H.map(h=>h.k));
+  $("calmonth").textContent=new Date(Date.UTC(y,m,15)).toLocaleDateString("lt-LT",{month:"long",year:"numeric",timeZone:"UTC"});
+  $("calweek").textContent=`${isoWeek(today)} savaitė · uke ${isoWeek(today)}`;
+  const first=new Date(Date.UTC(y,m,1)), off=(first.getUTCDay()+6)%7;
+  let start=addD(first,-off), html=`<span></span>`+["Pr","An","Tr","Kt","Pn","Št","Sk"].map(x=>`<span class="dh">${x}</span>`).join("");
+  for(let w=0;w<6;w++){
+    const wkStart=addD(start,w*7);
+    if(w>0&&wkStart.getUTCMonth()!==m) break;
+    html+=`<span class="wk">${isoWeek(wkStart)}</span>`;
+    for(let i=0;i<7;i++){
+      const d=addD(wkStart,i), k=keyOf(d), cls=["d"];
+      if(d.getUTCMonth()!==m) cls.push("out");
+      if(i===6) cls.push("sun");
+      if(hset.has(k)) cls.push("hol");
+      if(k===tk) cls.push("today");
+      html+=`<span class="${cls.join(" ")}">${d.getUTCDate()}</span>`;
+    }
+  }
+  $("calgrid").innerHTML=html;
+  const next=H.filter(h=>h.k>=tk).sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:a.cc<b.cc?-1:1).slice(0,4);
+  $("hols").innerHTML=`<span class="label">Artimiausios šventės</span>`+next.map(h=>{
+    const dt=new Date(h.k+"T12:00:00Z"), dd=Math.round((dt-today)/86400e3-.5);
+    const when=dd===0?"Šiandien":dt.toLocaleDateString("lt-LT",{month:"short",day:"numeric",timeZone:"UTC"});
+    return `<div class="hl"><span class="when">${when}</span><span class="cc ${h.cc.toLowerCase()}">${h.cc}</span><span class="nm">${h.n}</span></div>`;
+  }).join("");
+}
+
+/* ---------- living sky (canvas) ---------- */
+const cv=$("sky"), cx=cv.getContext("2d");
+let W=0,H=0;
+function resize(){const s=Math.min(1,1280/innerWidth);W=cv.width=Math.round(innerWidth*s);H=cv.height=Math.round(innerHeight*s);}
+resize();addEventListener("resize",resize);
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const mix=(c1,c2,t)=>{const a=hex(c1),b=hex(c2);return `rgb(${a.map((v,i)=>Math.round(lerp(v,b[i],t))).join(",")})`};
+const mixA=(c1,c2,t)=>{const a=hex(c1),b=hex(c2);return a.map((v,i)=>lerp(v,b[i],t))};
+// sun elevation proxy: 0..1 by day (peaks at solar noon), negative after dark (-1 = deep night)
+function elev(now){
+  if(!S.sunrise) { const h=+new Date(now).toLocaleString("en-US",{timeZone:TZ,hour:"numeric",hour12:false}); return h>=9&&h<16?.5:-1; }
+  const sr=+S.sunrise, ss=+S.sunset, t=+now;
+  if(t>=sr&&t<=ss) return Math.sin(Math.PI*(t-sr)/(ss-sr));
+  const dist=t<sr?(sr-t):(t-ss);
+  return -clamp(dist/(2.5*3600e3),0,1);
+}
+function palette(e,cloud){
+  // stops: night / twilight / day ; grey toward overcast
+  const NIGHT=["#040b18","#0f2236"], TWI=["#26315c","#d98a5f"], DAY=["#2a6c9c","#8fc6d9"], GREY=["#55697a","#a2b3bc"];
+  let top,bot;
+  if(e<=-.45){top=mixA(NIGHT[0],NIGHT[0],0);bot=mixA(NIGHT[1],NIGHT[1],0);}
+  else if(e<0){const t=(e+.45)/.45;top=mixA(NIGHT[0],TWI[0],t);bot=mixA(NIGHT[1],TWI[1],t);}
+  else if(e<.25){const t=e/.25;top=mixA(TWI[0],DAY[0],t);bot=mixA(TWI[1],DAY[1],t);}
+  else {top=hex(DAY[0]);bot=hex(DAY[1]);}
+  const g=clamp(cloud/100,0,1)*.65*clamp(e+.3,0,1);
+  const gt=hex(GREY[0]),gb=hex(GREY[1]);
+  top=top.map((v,i)=>lerp(v,gt[i],g));bot=bot.map((v,i)=>lerp(v,gb[i],g));
+  const rgb=a=>`rgb(${a.map(Math.round).join(",")})`;
+  return {top:rgb(top),bot:rgb(bot),botA:bot};
+}
+const stars=Array.from({length:140},()=>({x:Math.random(),y:Math.random()*.62,r:Math.random()*1.3+.3,p:Math.random()*6.28}));
+let clouds=[], drops=[];
+function seedClouds(){
+  const n=Math.round(3+S.cloud/9);
+  while(clouds.length<n) clouds.push({x:Math.random()*1.3-.15,y:.04+Math.random()*.42,s:.12+Math.random()*.2,a:.5+Math.random()*.5,v:.6+Math.random()*.8});
+  clouds.length=n;
+}
+function seedDrops(){
+  const want=isRain(S.code)?Math.round(clamp(80+S.precip*120,80,320)):isSnow(S.code)?160:0;
+  while(drops.length<want) drops.push({x:Math.random(),y:Math.random(),v:.6+Math.random()*.6});
+  drops.length=want;
+}
+let last=0, phase=0;
+function frame(ts){
+  if(!REDUCED) requestAnimationFrame(frame);
+  if(ts-last<33) return; const dt=Math.min(.1,(ts-last)/1000); last=ts;
+  const now=Date.now(), e=elev(now), P=palette(e,S.cloud);
+  const vxTo=Math.sin((S.dir+180)*Math.PI/180); // +1 = blowing toward right (east)
+  seedClouds(); seedDrops();
+  // sky
+  const g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,P.top);g.addColorStop(.78,P.bot);g.addColorStop(1,P.bot);
+  cx.fillStyle=g;cx.fillRect(0,0,W,H);
+  // stars
+  const night=clamp(-e*1.6,0,1)*(1-S.cloud/110);
+  if(night>.02){for(const s of stars){const a=night*(.55+.45*Math.sin(ts/900+s.p));cx.fillStyle=`rgba(255,255,255,${a.toFixed(3)})`;cx.beginPath();cx.arc(s.x*W,s.y*H,s.r,0,6.283);cx.fill();}}
+  // sun or moon on an arc
+  if(S.sunrise){
+    const sr=+S.sunrise, ss=+S.sunset;
+    let k, body;
+    if(now>=sr&&now<=ss){k=(now-sr)/(ss-sr);body="sun";}
+    else {const ns=now>ss?ss:ss-86400e3, nr=now<sr?sr:sr+86400e3;k=(now-ns)/(nr-ns);body="moon";}
+    const bx=lerp(.08,.92,k)*W, by=H*(.62-.42*Math.sin(Math.PI*k)), vis=1-S.cloud/140;
+    const R=H*(body==="sun"?.045:.032);
+    const gl=cx.createRadialGradient(bx,by,R*.3,bx,by,R*5);
+    gl.addColorStop(0,body==="sun"?`rgba(255,214,130,${.55*vis})`:`rgba(220,232,255,${.25*vis})`);gl.addColorStop(1,"rgba(255,255,255,0)");
+    cx.fillStyle=gl;cx.beginPath();cx.arc(bx,by,R*5,0,6.283);cx.fill();
+    cx.fillStyle=body==="sun"?`rgba(255,226,160,${.95*vis})`:`rgba(236,242,250,${.9*vis})`;cx.beginPath();cx.arc(bx,by,R,0,6.283);cx.fill();
+    if(body==="moon"){cx.fillStyle=P.top;cx.globalAlpha=.85*vis;cx.beginPath();cx.arc(bx+R*.45,by-R*.15,R*.9,0,6.283);cx.fill();cx.globalAlpha=1;}
+  }
+  // clouds drift with the real wind
+  const day=clamp(e+.4,0,1), cc=mix("#2a3b52","#ffffff",day);
+  for(const c of clouds){
+    c.x+=vxTo*(.004+S.wind*.0016)*c.v*dt;
+    if(c.x>1.35)c.x=-.35; if(c.x<-.35)c.x=1.35;
+    const r=c.s*W, x=c.x*W, y=c.y*H;
+    cx.globalAlpha=c.a*(.35+.5*S.cloud/100);
+    for(let j=0;j<5;j++){
+      const ox=(j-2)*r*.35, oy=Math.sin(j*1.7)*r*.08, rr=r*(.38+.12*Math.cos(j*2.1));
+      const cg=cx.createRadialGradient(x+ox,y+oy,0,x+ox,y+oy,rr);cg.addColorStop(0,cc);cg.addColorStop(1,"rgba(255,255,255,0)");
+      cx.fillStyle=cg;cx.beginPath();cx.ellipse(x+ox,y+oy,rr,rr*.55,0,0,6.283);cx.fill();
+    }
+    cx.globalAlpha=1;
+  }
+  // sea: three wave layers, amplitude from wind, mean level from tide
+  phase+=dt*(.6+S.wind*.12);
+  const base=H*(.83-S.tide*.035), amp=H*clamp(.004+S.wind*.0011,.004,.03);
+  const sea=P.botA, deep=[8,26,38];
+  for(let L=0;L<3;L++){
+    const yb=base+L*H*.045, a=amp*(1+L*.35), wl=W/(2.2+L*1.3), sp=phase*(1+L*.4)*Math.sign(vxTo||1);
+    const col=sea.map((v,i)=>Math.round(lerp(v*.55,deep[i],.35+L*.25)));
+    cx.fillStyle=`rgba(${col.join(",")},${.92})`;
+    cx.beginPath();cx.moveTo(0,H);
+    for(let x=0;x<=W;x+=8){cx.lineTo(x,yb+Math.sin(x/wl*6.283+sp)*a+Math.sin(x/(wl*.43)*6.283-sp*1.7)*a*.35);}
+    cx.lineTo(W,H);cx.closePath();cx.fill();
+    // foam crest when windy
+    if(S.wind>7&&L===0){cx.strokeStyle=`rgba(255,255,255,${clamp((S.wind-7)/12,0,.5)})`;cx.lineWidth=1.5;cx.beginPath();
+      for(let x=0;x<=W;x+=8){const y=yb+Math.sin(x/wl*6.283+sp)*a+Math.sin(x/(wl*.43)*6.283-sp*1.7)*a*.35;x?cx.lineTo(x,y):cx.moveTo(x,y);}cx.stroke();}
+  }
+  // rain / snow, slanted by wind
+  if(drops.length){
+    const snow=isSnow(S.code);
+    cx.strokeStyle="rgba(210,230,240,.45)";cx.fillStyle="rgba(255,255,255,.85)";cx.lineWidth=1.2;
+    for(const d of drops){
+      d.y+=dt*(snow?.08:.9)*d.v; d.x+=dt*vxTo*S.wind*(snow?.006:.012);
+      if(snow) d.x+=Math.sin(ts/700+d.v*9)*.0006;
+      if(d.y>1){d.y=-.02;d.x=Math.random();} if(d.x>1)d.x-=1; if(d.x<0)d.x+=1;
+      const x=d.x*W,y=d.y*H;
+      if(snow){cx.beginPath();cx.arc(x,y,1.6*d.v+.6,0,6.283);cx.fill();}
+      else{cx.beginPath();cx.moveTo(x,y);cx.lineTo(x+vxTo*S.wind*1.2,y+14*d.v);cx.stroke();}
+    }
+  }
+  // day-phase caption
+  $("phase").textContent=e>.25?"Diena":e>0?(now<+S.sunrise+3*3600e3?"Rytas":"Vakaras"):e>-.45?"Prieblanda":"Naktis";
+}
+requestAnimationFrame(frame);
+if(REDUCED) setInterval(()=>frame(performance.now()+1e5),60e3);
+
+/* ---------- TV mode ---------- */
+// Streams verified 2026-10-24 from Norway: playlist + segments load in a browser. type "yt" = YouTube embed.
+const CH=[
+  {g:"Norvegija",n:"NRK1",u:"https://nrk-live-no.akamaized.net/nrk1/muxed.m3u8"},
+  {g:"Norvegija",n:"NRK1 Midtnytt",u:"https://nrk-live-no.akamaized.net/nrk1_dk4/muxed.m3u8"},
+  {g:"Norvegija",n:"NRK2",u:"https://nrk-live-no.akamaized.net/nrk2/muxed.m3u8"},
+  {g:"Norvegija",n:"NRK3",u:"https://nrk-live-no.akamaized.net/nrk3/muxed.m3u8"},
+  {g:"Norvegija",n:"NRK Super",u:"https://nrk-live-no.akamaized.net/nrksuper/muxed.m3u8"},
+  {g:"Norvegija",n:"Frikanalen",u:"https://frikanalen.no/stream/index.m3u8"},
+  {g:"Rusų kalba",n:"Россия 1",u:"https://stream.smotrim.ru/hls2/russia_hd/playlist_6.m3u8"},
+  {g:"Rusų kalba",n:"Россия 24",u:"https://stream.smotrim.ru/hls2/russia24nl_smotrim/playlist_5.m3u8"},
+  {g:"Rusų kalba",n:"Россия К",u:"https://stream.smotrim.ru/hls2/russia_k/playlist_5.m3u8"},
+  {g:"Rusų kalba",n:"Карусель",u:"https://stream.smotrim.ru/hls2/karusel/playlist_3.m3u8"},
+  {g:"Rusų kalba",n:"Москва 24",u:"https://stream.smotrim.ru/hls2/moscow_24/playlist_3.m3u8"},
+  {g:"Rusų kalba",n:"Звезда",u:"https://tvchannelstream1.tvzvezda.ru/cdn/tvzvezda/playlist.m3u8"},
+  {g:"Rusų kalba",n:"Спас",u:"https://tvspas.mediacdn.ru/cdn/spas/playlist.m3u8"},
+  {g:"Rusų kalba",n:"DW (rusų k.)",u:"https://dwamdstream110.akamaized.net/hls/live/2017971/dwstream110/master.m3u8"},
+  {g:"YouTube",n:"Настоящее время",yt:"HHgksyoQxAs"}
+];
+let tvOn=false, sel=0, playing=-1, hls=null, listTimer=0, banTimer=0, numBuf="", numTimer=0;
+try{const s=+localStorage.getItem("ch");if(s>=0&&s<CH.length)sel=s;}catch(e){}
+function renderList(){
+  let html="",g="";
+  CH.forEach((c,i)=>{if(c.g!==g){g=c.g;html+=`<div class="chgroup">${g}</div>`;}
+    html+=`<div class="ch${i===sel?" sel":""}${i===playing?" on":""}" id="ch${i}"><span class="n">${i+1}</span><span>${c.n}</span><span class="src">${c.yt?"YT":""}</span></div>`;});
+  $("chlist").innerHTML=html+`<div class="tvhelp">▲▼ kanalas · OK rodyti · ◀ atgal į ekraną · skaičiai – kanalo nr.</div>`;
+  const el=$("ch"+sel); if(el) el.scrollIntoView({block:"nearest"});
+}
+function showList(){ $("chlist").classList.remove("hide"); clearTimeout(listTimer); if(playing>=0) listTimer=setTimeout(()=>$("chlist").classList.add("hide"),6000); }
+function banner(name,text){ $("bname").textContent=name;$("btext").textContent=text;$("banner").classList.remove("hide");clearTimeout(banTimer);banTimer=setTimeout(()=>$("banner").classList.add("hide"),4000); }
+function stop(){ if(hls){hls.destroy();hls=null;} const v=$("vid"); v.removeAttribute("src"); v.load(); $("yt").src="about:blank"; $("yt").hidden=true; }
+function play(i){
+  stop(); playing=i; const c=CH[i]; $("tvmsg").textContent="Jungiamasi…";
+  try{localStorage.setItem("ch",i);}catch(e){}
+  banner(`${i+1} · ${c.n}`,c.g);
+  if(c.yt){ $("yt").hidden=false; $("yt").src=`https://www.youtube-nocookie.com/embed/${c.yt}?autoplay=1&controls=0&rel=0`; $("tvmsg").textContent=""; renderList(); showList(); return; }
+  const v=$("vid"); v.onplaying=()=>{$("tvmsg").textContent="";};
+  const fail=()=>{$("tvmsg").textContent=`${c.n} šiuo metu nerodo. Pasirink kitą kanalą.`;};
+  if(window.Hls&&Hls.isSupported()){
+    hls=new Hls({lowLatencyMode:false,maxBufferLength:20});
+    hls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal){if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else fail();}});
+    hls.loadSource(c.u); hls.attachMedia(v);
+    hls.on(Hls.Events.MANIFEST_PARSED,()=>v.play().catch(()=>{}));
+  } else if(v.canPlayType("application/vnd.apple.mpegurl")){ v.src=c.u; v.onerror=fail; v.play().catch(()=>{}); }
+  else fail();
+  renderList(); showList();
+}
+function openTV(){ tvOn=true; $("tv").hidden=false; renderList(); showList(); if(playing<0) play(sel); }
+function closeTV(){ tvOn=false; stop(); playing=-1; $("tv").hidden=true; }
+const KEY={up:["ArrowUp"],down:["ArrowDown"],ok:["Enter"," "],back:["Backspace","Escape","GoBack","BrowserBack","XF86Back"],
+  left:["ArrowLeft"],right:["ArrowRight"],chUp:["ChannelUp","PageUp"],chDown:["ChannelDown","PageDown"]};
+const is=(e,k)=>KEY[k].includes(e.key)||(k==="back"&&[461,10009,8,27].includes(e.keyCode))||(k==="chUp"&&e.keyCode===427)||(k==="chDown"&&e.keyCode===428);
+addEventListener("keydown",e=>{
+  if(!tvOn){ if(is(e,"ok")||is(e,"chUp")||is(e,"chDown")||/^[0-9]$/.test(e.key)){e.preventDefault();openTV();} return; }
+  const listOpen=!$("chlist").classList.contains("hide");
+  if(/^[0-9]$/.test(e.key)){ numBuf+=e.key; clearTimeout(numTimer); banner(numBuf,"kanalas");
+    numTimer=setTimeout(()=>{const n=+numBuf-1;numBuf="";if(n>=0&&n<CH.length){sel=n;play(n);}},1200); e.preventDefault(); return; }
+  if(is(e,"up")){ if(listOpen) {sel=(sel-1+CH.length)%CH.length;renderList();} showList(); e.preventDefault(); }
+  else if(is(e,"down")){ if(listOpen) {sel=(sel+1)%CH.length;renderList();} showList(); e.preventDefault(); }
+  else if(is(e,"chUp")){ sel=(playing+1)%CH.length; play(sel); e.preventDefault(); }
+  else if(is(e,"chDown")){ sel=(playing-1+CH.length)%CH.length; play(sel); e.preventDefault(); }
+  else if(is(e,"ok")){ if(listOpen&&sel!==playing) play(sel); else showList(); e.preventDefault(); }
+  else if(is(e,"back")||is(e,"left")){ if(listOpen&&playing>=0&&is(e,"back")){$("chlist").classList.add("hide");} else closeTV(); e.preventDefault(); }
+  else if(is(e,"right")){ showList(); e.preventDefault(); }
+});
+
+/* ---------- start ---------- */
+drawCal(); setInterval(drawCal,60e3);
+loadWeather(); loadTide();
+setInterval(loadWeather,15*60e3);
+setInterval(loadTide,6*3600e3);
+setInterval(()=>{if(tides.length)drawTide()},60e3);
+addEventListener("resize",()=>{if(tides.length)drawTide()});
+// full reload once a day at ~04:00 to keep an always-on screen fresh
+setInterval(()=>{const h=new Date().toLocaleString("en-US",{timeZone:TZ,hour:"numeric",hour12:false});if(h==="4")location.reload()},3600e3);
+</script>
+</body>
+</html>
