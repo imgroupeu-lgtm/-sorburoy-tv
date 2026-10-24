@@ -1,7 +1,7 @@
 """Fetch latest wind observations for Halten fyr and Bogøya from MET Norway Frost
 and write obs.json next to index.html. Runs in GitHub Actions; the client ID comes
 from the FROST_CLIENT_ID repository secret and is never written to the repo."""
-import base64, json, os, sys, urllib.request, urllib.parse, datetime
+import base64, json, os, sys, urllib.request, urllib.parse, urllib.error, datetime
 
 CLIENT_ID = os.environ.get("FROST_CLIENT_ID", "").strip()
 STATIONS = {"SN71850": "Halten fyr", "SN65930": "Bogøya"}
@@ -32,8 +32,11 @@ def main():
                 item = d["data"][0]
                 st[key] = item["observations"][0]["value"]
                 st.setdefault("time", item["referenceTime"])
-            except Exception as e:  # element not measured at this station, or no recent value
-                print(f"{name} {el}: {e}", file=sys.stderr)
+            except urllib.error.HTTPError as e:  # element not measured here, or no recent value
+                body = e.read().decode("utf-8", "replace")[:160]
+                st.setdefault("errors", []).append(f"{el}: HTTP {e.code} {body}")
+            except Exception as e:
+                st.setdefault("errors", []).append(f"{el}: {type(e).__name__}")
         if "gust" not in st and "gust1h" in st:
             st["gust"] = st["gust1h"]
         st.pop("gust1h", None)
