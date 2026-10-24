@@ -26,8 +26,8 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw
   text-shadow:0 .08vw .5vw rgba(0,10,20,.35)}
 #sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
 .screen{position:relative;z-index:1;height:100%;display:grid;
-  grid-template-columns:1fr 1.15fr .95fr;grid-template-rows:1fr auto;gap:1.6vw;padding:2.4vw 3vw 2vw}
-.panel{background:var(--glass);border:1px solid var(--glass-edge);border-radius:1.2vw;padding:1.6vw 1.8vw;
+  grid-template-columns:1fr 1.15fr .95fr;grid-template-rows:minmax(0,1fr) auto;gap:1.2vw;padding:2vw 2.4vw 1.6vw}
+.panel{background:var(--glass);border:1px solid var(--glass-edge);border-radius:1.2vw;padding:1.1vw 1.4vw;overflow:hidden;
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);min-width:0}
 .label{font-size:.85vw;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2)}
 .num{font-family:var(--display);font-variant-numeric:tabular-nums}
@@ -35,39 +35,39 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw
 @keyframes fadeIn{from{opacity:0;transform:translateY(.4vw)}to{opacity:1;transform:none}}
 
 /* clock */
-.clock{display:flex;flex-direction:column;justify-content:flex-start;gap:.9vw}
-.time{font-family:var(--display);font-weight:300;font-size:9.5vw;line-height:.85;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.time .sec{font-size:3vw;color:var(--ink-2);margin-left:.5vw;font-weight:500}
+.clock{display:flex;flex-direction:column;justify-content:flex-start;gap:.55vw}
+.time{font-family:var(--display);font-weight:300;font-size:7vw;line-height:.85;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.time .sec{font-size:2.2vw;color:var(--ink-2);margin-left:.5vw;font-weight:500}
 .minbar{height:.3vw;border-radius:.3vw;background:rgba(255,255,255,.15);overflow:hidden}
 .minbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--kelp),var(--lamp));transition:width 1s linear}
-.date{font-size:1.9vw;font-weight:600;text-transform:capitalize}
-.sun{display:flex;gap:1.8vw;margin-top:.6vw;font-size:1.3vw}
-.sun b{font-family:var(--display);font-weight:500;color:var(--lamp);font-size:2vw;display:block}
+.date{font-size:1.6vw;font-weight:600;text-transform:capitalize}
+.sun{display:flex;gap:1.6vw;margin-top:.2vw;font-size:1.2vw}
+.sun b{font-family:var(--display);font-weight:500;color:var(--lamp);font-size:1.6vw;display:block}
 .phase{font-size:1.2vw;color:var(--ink-2)}
-.week{display:flex;flex-direction:column;gap:.15vw;margin-top:.8vw;padding-top:.8vw;border-top:1px solid var(--glass-edge)}
-.wd{display:grid;grid-template-columns:3.4vw 2.6vw 1fr 3.4vw 3.2vw;align-items:center;gap:.5vw;font-size:1.05vw;padding:.15vw 0}
+.week{display:flex;flex-direction:column;gap:0;margin-top:.4vw;padding-top:.6vw;border-top:1px solid var(--glass-edge)}
+.wd{display:grid;grid-template-columns:3.6vw 1.9vw 1fr 3.4vw 3.2vw;align-items:center;gap:.5vw;font-size:1vw;padding:.05vw 0}
 .wd .dn{font-weight:600;text-transform:capitalize}
 .wd .dn.today{color:var(--lamp)}
 .wd .bar{position:relative;height:.45vw;border-radius:.3vw;background:rgba(255,255,255,.1)}
 .wd .bar i{position:absolute;top:0;bottom:0;border-radius:.3vw;background:linear-gradient(90deg,var(--kelp),var(--lamp))}
-.wd .tt{font-family:var(--display);font-size:1.3vw;font-weight:500;text-align:right;white-space:nowrap}
+.wd .tt{font-family:var(--display);font-size:1.2vw;font-weight:500;text-align:right;white-space:nowrap}
 .wd .tt span{color:var(--ink-2)}
 .wd .ww{color:var(--ink-2);text-align:right;white-space:nowrap}
-.wd .icon{width:2.2vw;height:2.2vw}
+.wd .icon{width:1.8vw;height:1.8vw}
 
 /* weather */
-.wx{display:flex;flex-direction:column;gap:1.3vw}
+.wx{display:flex;flex-direction:column;gap:.8vw}
 .now{display:grid;grid-template-columns:auto 1fr;gap:1.8vw;align-items:center}
-.temp{font-family:var(--display);font-weight:300;font-size:7.5vw;line-height:.9}
-.temp sup{font-size:2.8vw;color:var(--ink-2);vertical-align:top;position:relative;top:.7vw}
-.cond{font-size:1.9vw;font-weight:600}
+.temp{font-family:var(--display);font-weight:300;font-size:5.6vw;line-height:.9}
+.temp sup{font-size:2.2vw;color:var(--ink-2);vertical-align:top;position:relative;top:.7vw}
+.cond{font-size:1.7vw;font-weight:600}
 .feels{color:var(--ink-2);font-size:1.25vw;margin-top:.3vw}
-.wind{display:flex;align-items:center;gap:1.4vw;background:rgba(255,255,255,.07);border-radius:.9vw;padding:1vw 1.3vw}
-.compass{width:5vw;height:5vw;flex:none;overflow:visible}
+.wind{display:flex;align-items:center;gap:1.2vw;background:rgba(255,255,255,.07);border-radius:.9vw;padding:.6vw 1.1vw}
+.compass{width:3.8vw;height:3.8vw;flex:none;overflow:visible}
 #arrow{transition:transform 2s cubic-bezier(.3,.7,.2,1)}
 #arrowWob{animation:wob 3s ease-in-out infinite;transform-origin:0 0}
 @keyframes wob{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
-.wind .speed{font-family:var(--display);font-size:3.8vw;font-weight:500;line-height:1;white-space:nowrap}
+.wind .speed{font-family:var(--display);font-size:3vw;font-weight:500;line-height:1;white-space:nowrap}
 .wind .speed small{font-size:1.4vw;color:var(--ink-2);margin-left:.4vw}
 .wind .detail{font-size:1.2vw;color:var(--ink-2);line-height:1.5}
 .wind .detail b{color:var(--lamp);font-weight:600}
@@ -79,14 +79,14 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw
 .hour .w{font-size:1vw;color:var(--ink-2)}
 .hour .p{font-size:.95vw;color:var(--kelp);min-height:1.3em}
 .icon{width:2.6vw;height:2.6vw}
-.seawind{display:flex;flex-direction:column;gap:.4vw;background:rgba(255,255,255,.05);border-radius:.9vw;padding:.9vw 1.1vw}
+.seawind{display:flex;flex-direction:column;gap:.3vw;background:rgba(255,255,255,.05);border-radius:.9vw;padding:.7vw 1.1vw}
 .sw-head{display:flex;justify-content:space-between;align-items:baseline}
 .sw-legend{font-size:.85vw;color:var(--ink-2);display:flex;align-items:center;gap:.4vw}
 .sw-legend i{display:inline-block;width:.9vw;height:.45vw;border-radius:.2vw;margin-left:.5vw}
 .lg-s{background:var(--kelp)} .lg-g{background:none;border-top:2px solid var(--lamp);height:0!important}
-.sw-alert{font-size:1.3vw;font-weight:600;line-height:1.3}
+.sw-alert{font-size:1.15vw;font-weight:600;line-height:1.3}
 .sw-alert.calm{color:var(--kelp)} .sw-alert.warn{color:var(--lamp)} .sw-alert.bad{color:#ff8a7a}
-#swchart{width:100%;height:7.5vw;display:block;overflow:visible}
+#swchart{width:100%;height:6vw;display:block;overflow:visible}
 .sw-axis{display:flex;justify-content:space-between;font-size:.9vw;color:var(--ink-2);font-variant-numeric:tabular-nums}
 
 /* calendar */
@@ -110,14 +110,14 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw
 .hl .nm{color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* tide */
-.tide{grid-column:1 / -1;display:grid;grid-template-columns:1fr 25vw;gap:2vw;align-items:end}
-.tide svg{width:100%;height:11vw;display:block;overflow:visible}
-.tidelist{display:flex;flex-direction:column;gap:.45vw}
-.tl{display:grid;grid-template-columns:5.5vw 1fr auto;align-items:baseline;gap:.8vw;font-size:1.35vw}
+.tide{grid-column:1 / -1;display:grid;grid-template-columns:1fr 24vw;gap:2vw;align-items:center}
+.tide svg{width:100%;height:6.5vw;display:block;overflow:visible}
+.tidelist{display:flex;flex-direction:column;gap:.15vw}
+.tl{display:grid;grid-template-columns:5.5vw 1fr auto;align-items:baseline;gap:.8vw;font-size:1.15vw}
 .tl .k{font-weight:600}
 .tl .k.high{color:var(--kelp)}
 .tl .k.low{color:var(--ink-2)}
-.tl .v{font-family:var(--display);font-size:1.9vw;font-weight:500}
+.tl .v{font-family:var(--display);font-size:1.5vw;font-weight:500}
 .tl .c{color:var(--ink-2);font-size:1.1vw}
 .tl.past{opacity:.45}
 .tl.next{animation:glow 2.4s ease-in-out infinite}
@@ -197,10 +197,6 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw
       <div class="sw-alert" id="swalert"></div>
       <svg id="swchart" viewBox="0 0 1000 300" preserveAspectRatio="none"></svg>
       <div class="sw-axis" id="swaxis"></div>
-    </div>
-    <div>
-      <div class="label" style="margin-bottom:.5vw">Artimiausios valandos</div>
-      <div class="hours" id="hours"></div>
     </div>
   </section>
 
@@ -298,15 +294,6 @@ async function loadWeather(){
     $("wdetail").innerHTML=`Pučia iš <b style="color:var(--ink)">${dirName(c.wind_direction_10m)}</b> (${Math.round(c.wind_direction_10m)}°)<br>Gūsiai iki <b>${c.wind_gusts_10m.toFixed(1)} m/s</b>`;
     $("arrow").style.transform=`rotate(${c.wind_direction_10m+180}deg)`;
     $("arrowWob").style.animationDuration=Math.max(.8,4-c.wind_gusts_10m/8)+"s";
-    const now=Date.now()/1e3, start=d.hourly.time.findIndex(t=>t>now);
-    let html="";
-    for(let i=start;i<start+6&&i<d.hourly.time.length;i++){
-      const pr=d.hourly.precipitation[i], hh=new Date(d.hourly.time[i]*1e3);
-      html+=`<div class="hour"><span class="h">${fmtT(hh)}</span>${icon(d.hourly.weather_code[i],d.hourly.is_day[i])}
-        <span class="t num">${Math.round(d.hourly.temperature_2m[i])}°</span><span class="w">${Math.round(d.hourly.wind_speed_10m[i])} m/s</span>
-        <span class="p">${pr>0?pr.toFixed(1)+" mm":""}</span></div>`;
-    }
-    $("hours").innerHTML=html;
     $("sunrise").textContent=fmtT(S.sunrise);
     $("sunset").textContent=fmtT(S.sunset);
     const dl=d.daily.daylight_duration[0];
@@ -419,7 +406,7 @@ function drawTide(){
     const nx=tides[nextIdx], mins=Math.round((nx.t-now)/60e3);
     $("tstatus").textContent=`Dabar ~${Math.round(nv)} cm · ${nx.high?"kyla":"slūgsta"} · ${nx.high?"potvynis":"atoslūgis"} po ${Math.floor(mins/60)} val ${mins%60} min`;
   }
-  const list=tides.slice(Math.max(0,nextIdx-1),nextIdx+4);
+  const list=tides.slice(Math.max(0,nextIdx-1),nextIdx+3);
   $("tidelist").innerHTML=list.map(x=>{
     const past=x.t<now, isNext=x===tides[nextIdx];
     const day=x.t.toLocaleDateString("lt-LT",{timeZone:TZ,weekday:"short"});
