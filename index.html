@@ -511,11 +511,11 @@ async function loadBoat(){
       ev.push({kind:"out",aim:new Date(c.aimedDepartureTime),exp:new Date(c.expectedDepartureTime),c,
         dest:placeName(c.destinationDisplay.frontText)});});
     // coming to Sørburøy: departure from Dyrøy on a journey bound for Sørburøy, plus its arrival time here
-    const arrBy=new Map(atS.filter(c=>c.destinationDisplay.frontText.startsWith("Sørburøy")).map(c=>[c.serviceJourney.id,c]));
-    atD.filter(c=>c.destinationDisplay.frontText.startsWith("Sørburøy")).forEach(c=>{
+    const arrBy=new Map(atS.map(c=>[c.serviceJourney.id,c]));
+    atD.filter(c=>c.destinationDisplay.frontText.startsWith("Sørburøy")||arrBy.has(c.serviceJourney.id)&&new Date(arrBy.get(c.serviceJourney.id).aimedArrivalTime)>new Date(c.aimedDepartureTime)).forEach(c=>{
       const a=arrBy.get(c.serviceJourney.id);
       ev.push({kind:"in",aim:new Date(c.aimedDepartureTime),exp:new Date(c.expectedDepartureTime),c,
-        arr:a?new Date(a.expectedArrivalTime):null});});
+        arr:a&&a.expectedArrivalTime?new Date(a.expectedArrivalTime):null});});
     ev.sort((x,y)=>x.aim-y.aim);
     const now=new Date(), today=keyOf(osloToday());
     // one line on the dashboard
