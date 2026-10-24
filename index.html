@@ -367,7 +367,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261024230540";
+const BUILD="20261024230655";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -581,7 +581,8 @@ async function loadBoat(){
     atD.filter(c=>c.destinationDisplay.frontText.startsWith("Sørburøy")||arrBy.has(c.serviceJourney.id)&&new Date(arrBy.get(c.serviceJourney.id).aimedArrivalTime)>new Date(c.aimedDepartureTime)).forEach(c=>{
       const a=arrBy.get(c.serviceJourney.id);
       const dep=new Date(c.expectedDepartureTime);
-      if(a&&a.aimedArrivalTime&&new Date(a.aimedArrivalTime)<=new Date(c.aimedDepartureTime)) return; // boat returning to Dyrøy, not going to Sørburøy
+      const atDy=new Date(c.aimedDepartureTime||c.aimedArrivalTime);
+      if(a&&a.aimedArrivalTime&&new Date(a.aimedArrivalTime)<=atDy) return; // boat returning into Dyrøy, not leaving for Sørburøy
       // getting to Dyrøy: last bus arriving 5–90 min before the boat leaves
       const feeder=busIn.filter(b=>dep-b.t>=5*60e3&&dep-b.t<=90*60e3).sort((a,b)=>b.t-a.t)[0]||null;
       ev.push({kind:"in",aim:new Date(c.aimedDepartureTime),exp:dep,c,
