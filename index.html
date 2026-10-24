@@ -40,8 +40,8 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:calc(
 @keyframes fadeIn{from{opacity:0;transform:translateY(calc(.4*var(--u)))}to{opacity:1;transform:none}}
 
 /* clock */
-.clock{display:flex;flex-direction:column;justify-content:flex-start;gap:calc(.55*var(--u))}
-.time{font-family:var(--display);font-weight:300;font-size:calc(7*var(--u));line-height:.85;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.clock{display:flex;flex-direction:column;justify-content:flex-start;gap:calc(.4*var(--u))}
+.time{font-family:var(--display);font-weight:300;font-size:calc(6.2*var(--u));line-height:.85;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
 .time .sec{font-size:calc(2.2*var(--u));color:var(--ink-2);margin-left:calc(.5*var(--u));font-weight:500}
 .minbar{height:calc(.3*var(--u));border-radius:calc(.3*var(--u));background:rgba(255,255,255,.15);overflow:hidden}
 .minbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--kelp),var(--lamp));transition:width 1s linear}
@@ -107,7 +107,7 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:calc(
 table.wk{width:100%;border-collapse:separate;border-spacing:0 calc(.3*var(--u));font-variant-numeric:tabular-nums}
 .wk th{font-size:calc(.8*var(--u));font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);text-align:center;padding:0 calc(.3*var(--u))}
 .wk th:first-child,.wk td:first-child{text-align:left}
-.wk td{background:rgba(255,255,255,.05);text-align:center;padding:calc(.3*var(--u)) calc(.4*var(--u));font-size:calc(1.15*var(--u))}
+.wk td{white-space:nowrap;background:rgba(255,255,255,.05);text-align:center;padding:calc(.3*var(--u)) calc(.4*var(--u));font-size:calc(1.15*var(--u))}
 .wk td:first-child{border-radius:calc(.6*var(--u)) 0 0 calc(.6*var(--u))}
 .wk td:last-child{border-radius:0 calc(.6*var(--u)) calc(.6*var(--u)) 0}
 .wk tr.today td{background:rgba(255,199,102,.12)}
@@ -323,7 +323,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
     </div>
     <div class="wx-week">
       <div class="label">7 dienų prognozė · Sørburøya</div>
-      <table class="wk"><thead><tr><th>Diena</th><th></th><th>Dieną</th><th>Naktį</th><th>Vėjas · gūsiai</th><th>Krituliai</th></tr></thead><tbody id="week"></tbody></table>
+      <table class="wk"><thead><tr><th>Diena</th><th></th><th>Dieną</th><th>Naktį</th><th>Vėjas · gūsiai m/s</th><th>Krituliai</th></tr></thead><tbody id="week"></tbody></table>
     </div>
   </section>
 
@@ -374,7 +374,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261024225606";
+const BUILD="20261024225724";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -460,7 +460,7 @@ async function loadWeather(){
         <td>${icon(D.weather_code[i],1)}</td>
         <td class="tmax">${Math.round(D.temperature_2m_max[i])}°</td>
         <td class="tmin">${Math.round(D.temperature_2m_min[i])}°</td>
-        <td><span class="wchip" style="background:${windColor(D.wind_speed_10m_max[i])}">${Math.round(D.wind_speed_10m_max[i])}</span><span class="gst">${Math.round(D.wind_gusts_10m_max[i])}</span> m/s</td>
+        <td><span class="wchip" style="background:${windColor(D.wind_speed_10m_max[i])}">${Math.round(D.wind_speed_10m_max[i])}</span><span class="gst">${Math.round(D.wind_gusts_10m_max[i])}</span></td>
         <td class="pr">${pr>=0.1?pr.toFixed(1)+" mm":"–"}</td></tr>`;}).join("");
     $("upd").textContent="atnaujinta "+fmtT(new Date());
   }catch(e){ $("cond").innerHTML=`<span class="err">Orų nepavyko gauti. Bandysiu vėl po 5 min.</span>`; setTimeout(loadWeather,300000); }
