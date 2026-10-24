@@ -1,27 +1,26 @@
 {
- "updated": "2026-10-24T20:28:04+00:00",
+ "updated": "2026-10-24T20:32:27+00:00",
  "stations": [
   {
    "id": "SN71850",
    "name": "Halten fyr",
-   "errors": [
-    "wind_speed: HTTP 401 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n",
-    "max(wind_speed_of_gust PT10M): HTTP 401 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n",
-    "max(wind_speed_of_gust PT1H): HTTP 401 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n",
-    "wind_from_direction: HTTP 401 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n",
-    "air_temperature: HTTP 401 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n"
-   ]
+   "speed": 17.3,
+   "time": "2026-10-24T20:30:00.000Z",
+   "gust": 21.3,
+   "dir": 133,
+   "temp": 11.5
   },
   {
    "id": "SN65930",
    "name": "Bogøya",
+   "speed": 7.6,
+   "time": "2026-10-24T20:20:00.000Z",
+   "gust": 13,
    "errors": [
-    "wind_speed: HTTP 401 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n",
-    "max(wind_speed_of_gust PT10M): HTTP 401 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n",
-    "max(wind_speed_of_gust PT1H): HTTP 401 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n",
-    "wind_from_direction: HTTP 401 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n",
-    "air_temperature: HTTP 401 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n"
-   ]
+    "max(wind_speed_of_gust PT1H): HTTP 412 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n"
+   ],
+   "dir": 125,
+   "temp": 11.7
   }
  ]
 }
