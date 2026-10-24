@@ -157,6 +157,29 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw
 .banner.hide{opacity:0}
 .tvmsg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:1.6vw;color:var(--ink-2);text-align:center;max-width:50vw}
 .tvhelp{position:absolute;left:1.4vw;bottom:1vw;font-size:.85vw;color:var(--ink-2)}
+/* sea forecast view */
+#sea{position:fixed;inset:0;z-index:4;padding:2vw 2.4vw 1.6vw;display:flex;flex-direction:column;gap:1vw}
+#sea .sea-head{display:flex;justify-content:space-between;align-items:baseline}
+#sea h2{margin:0;font-family:var(--display);font-weight:500;font-size:2.4vw}
+.sea-tables{display:grid;grid-template-columns:1fr 1fr;gap:1.2vw;min-height:0}
+.sea-t{padding:.8vw 1vw}
+.sea-t h3{margin:0 0 .4vw;font-size:1.3vw;font-weight:600;text-transform:capitalize}
+table.st{width:100%;border-collapse:separate;border-spacing:0 .25vw;font-variant-numeric:tabular-nums}
+.st th{font-size:.8vw;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);text-align:center;padding:0 .3vw .2vw}
+.st th:first-child,.st td:first-child{text-align:left}
+.st td{font-size:1.25vw;text-align:center;padding:.35vw .3vw;background:rgba(255,255,255,.05)}
+.st td:first-child{border-radius:.5vw 0 0 .5vw;font-family:var(--display);font-size:1.45vw;font-weight:500}
+.st td:last-child{border-radius:0 .5vw .5vw 0}
+.st tr.night td{background:rgba(0,0,0,.22)}
+.st tr.night td:first-child{color:var(--ink-2)}
+.st .big{font-family:var(--display);font-size:1.6vw;font-weight:600}
+.st .chip{display:inline-block;min-width:2.8vw;border-radius:.4vw;padding:.05vw .4vw;color:#0b2233;text-shadow:none}
+.st .arr{display:inline-block;width:1.2vw;height:1.2vw;vertical-align:-.15vw;margin-right:.3vw}
+.st .sub{color:var(--ink-2);font-size:1vw}
+.sea-legend{display:flex;gap:1.2vw;font-size:1vw;color:var(--ink-2);flex-wrap:wrap}
+.sea-legend span{display:inline-flex;align-items:center;gap:.4vw}
+.sea-legend i{display:inline-block;width:1.6vw;height:.9vw;border-radius:.25vw}
+.hint{cursor:pointer}
 /* phone / tablet held upright: one column, scaled up, scrollable */
 @media (orientation:portrait){
   body{overflow-y:auto;overflow-x:hidden}
@@ -164,6 +187,11 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw
     padding-left:max(1.6vw,env(safe-area-inset-left,0px));padding-right:max(1.6vw,env(safe-area-inset-right,0px))}
   .tide{grid-template-columns:1fr}
   .hint,.foot{display:none}
+  #sea{position:static;zoom:2.3;width:calc(100vw / 2.3);display:flex!important;padding-top:0}
+  #sea .back{display:none}
+  .sea-tables{grid-template-columns:1fr}
+  html,body{height:auto}
+  body{overflow-y:auto}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -230,7 +258,18 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:1.6vw
   </section>
 </main>
 <div class="foot">Orai: Open-Meteo (MET Norway modelis) · Potvyniai: Kartverket, CC BY 4.0 · <span id="upd"></span></div>
-<div class="hint">Spausk <kbd>OK</kbd> – televizija</div>
+<div class="hint" id="hint"><kbd>OK</kbd> televizija · <kbd>▶</kbd> jūros prognozė 48 val.</div>
+
+<section id="sea" hidden>
+  <div class="sea-head"><h2>Jūros prognozė · Sørburøya · 48 val.</h2><span class="label back">◀ atgal</span></div>
+  <div class="sea-legend">
+    <span><i style="background:#7fdcc6"></i>iki 5 m/s</span><span><i style="background:#b9e48a"></i>5–8</span>
+    <span><i style="background:#ffc766"></i>8–11</span><span><i style="background:#ff9f5a"></i>11–14</span><span><i style="background:#ff6b6b"></i>14+ m/s</span>
+    <span>· bangos: <i style="background:#7fdcc6"></i>iki 0.5 m <i style="background:#ffc766"></i>0.5–1.5 <i style="background:#ff6b6b"></i>1.5+ m</span>
+    <span>· tamsios eilutės – naktis</span>
+  </div>
+  <div class="sea-tables" id="seatables"><div class="panel sea-t">Kraunama…</div></div>
+</section>
 
 <div id="tv" hidden>
   <video id="vid" autoplay playsinline></video>
@@ -295,7 +334,7 @@ async function loadWeather(){
   try{
     const u=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}`+
       `&minutely_15=wind_speed_10m,wind_gusts_10m,wind_direction_10m&forecast_minutely_15=24&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,is_day,cloud_cover,precipitation`+
-      `&hourly=temperature_2m,weather_code,wind_speed_10m,precipitation,is_day&daily=sunrise,sunset,daylight_duration,weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max`+
+      `&hourly=temperature_2m,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation,is_day&daily=sunrise,sunset,daylight_duration,weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max`+
       `&wind_speed_unit=ms&timezone=${encodeURIComponent(TZ)}&forecast_days=7&timeformat=unixtime`;
     const r=await fetch(u); if(!r.ok) throw new Error(r.status);
     const d=await r.json(), c=d.current;
@@ -313,7 +352,7 @@ async function loadWeather(){
     $("sunset").textContent=fmtT(S.sunset);
     const dl=d.daily.daylight_duration[0];
     $("daylen").textContent=`${Math.floor(dl/3600)} val ${Math.round(dl%3600/60)} min`;
-    drawSeaWind(d);
+    drawSeaWind(d); SEA.wx=d; drawSea();
     const D=d.daily, lo=Math.min(...D.temperature_2m_min), hi=Math.max(...D.temperature_2m_max), span=(hi-lo)||1;
     $("week").innerHTML=D.time.map((t,i)=>{
       const day=i===0?"Šiandien":new Date(t*1e3+12*3600e3).toLocaleDateString("lt-LT",{timeZone:TZ,weekday:"short"});
@@ -364,8 +403,8 @@ function drawSeaWind(d){
 /* ---------- waves (Open-Meteo marine) ---------- */
 async function loadWaves(){
   try{
-    const r=await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}&hourly=wave_height,wave_direction,wave_period&timeformat=unixtime&forecast_days=2`);
-    if(!r.ok) throw 0; const d=await r.json(), H=d.hourly, now=Date.now()/1e3;
+    const r=await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}&hourly=wave_height,wave_direction,wave_period&timeformat=unixtime&forecast_days=3`);
+    if(!r.ok) throw 0; const d=await r.json(), H=d.hourly, now=Date.now()/1e3; SEA.mar=d; drawSea();
     let i=H.time.findIndex(t=>t+3600>now); if(i<0) throw 0;
     const nx=[i,i+1,i+2,i+3,i+4].filter(k=>k<H.time.length&&H.wave_height[k]!=null);
     const h0=H.wave_height[i], hmax=Math.max(...nx.map(k=>H.wave_height[k])), kmax=nx.find(k=>H.wave_height[k]===hmax);
@@ -373,6 +412,46 @@ async function loadWaves(){
     $("swwaves").innerHTML=`Bangos: <b>${h0.toFixed(1)} m</b>, periodas ${Math.round(H.wave_period[i])} s, iš ${dirName(H.wave_direction[i])}${trend}`;
   }catch(e){ $("swwaves").textContent="Bangų prognozės šiuo metu nepavyko gauti."; }
 }
+
+/* ---------- sea forecast tables, 48 h in 3-h steps ---------- */
+const SEA={wx:null,mar:null};
+const waveColor=h=>h<.5?"#7fdcc6":h<1.5?"#ffc766":"#ff6b6b";
+const arrow=(deg,col="var(--ink)")=>`<svg class="arr" viewBox="-10 -10 20 20" style="transform:rotate(${deg+180}deg)"><path d="M0,-8 L5,6 L0,3 L-5,6Z" fill="${col}"/></svg>`;
+function drawSea(){
+  const d=SEA.wx; if(!d) return;
+  const H=d.hourly, now=Date.now()/1e3;
+  let i0=H.time.findIndex(t=>t+3600>now); if(i0<0) return;
+  // start on the next whole 3-hour mark so rows read 00,03,06…
+  while(i0<H.time.length && new Date(H.time[i0]*1e3).toLocaleString("en-US",{timeZone:TZ,hour:"numeric",hour12:false})%3!==0) i0++;
+  const M=SEA.mar?.hourly, mIdx=t=>M?M.time.indexOf(t):-1;
+  const rows=[]; for(let k=0;k<16;k++){const i=i0+k*3; if(i<H.time.length) rows.push(i);}
+  const table=(part,title)=>{
+    let h=`<div class="panel sea-t"><h3>${title}</h3><table class="st"><thead><tr><th>Laikas</th><th>Vėjas</th><th>Gūsiai</th><th>Kryptis</th><th>Bangos</th><th>Periodas</th><th>Orai</th><th>Kritul.</th></tr></thead><tbody>`;
+    for(const i of part){
+      const t=H.time[i], dt=new Date(t*1e3), m=mIdx(t);
+      const wv=m>=0?M.wave_height[m]:null, wp=m>=0?M.wave_period[m]:null, wd=m>=0?M.wave_direction[m]:null;
+      const day=dt.toLocaleDateString("lt-LT",{timeZone:TZ,weekday:"short"});
+      h+=`<tr class="${H.is_day[i]?"":"night"}"><td>${fmtT(dt)} <span class="sub">${day}</span></td>
+        <td><span class="chip big" style="background:${windColor(H.wind_speed_10m[i])}">${Math.round(H.wind_speed_10m[i])}</span></td>
+        <td><span class="big" style="color:${windColor(H.wind_gusts_10m[i])}">${Math.round(H.wind_gusts_10m[i])}</span></td>
+        <td>${arrow(H.wind_direction_10m[i])}${dirName(H.wind_direction_10m[i])}</td>
+        <td>${wv==null?"–":`<span class="chip big" style="background:${waveColor(wv)}">${wv.toFixed(1)}</span>`}</td>
+        <td>${wp==null?"–":`${Math.round(wp)} s ${wd==null?"":arrow(wd,"var(--kelp)")}`}</td>
+        <td>${icon(H.weather_code[i],H.is_day[i])} ${Math.round(H.temperature_2m[i])}°</td>
+        <td class="sub">${H.precipitation[i]>0?H.precipitation[i].toFixed(1)+" mm":""}</td></tr>`;
+    }
+    return h+`</tbody></table></div>`;
+  };
+  const a=rows.slice(0,8), b=rows.slice(8,16);
+  const span=part=>{const f=new Date(H.time[part[0]]*1e3),l=new Date(H.time[part.at(-1)]*1e3);
+    const o={timeZone:TZ,weekday:"long",day:"numeric",month:"short"};return `${f.toLocaleDateString("lt-LT",o)} ${fmtT(f)} – ${fmtT(l)}`;};
+  $("seatables").innerHTML=table(a,span(a))+(b.length?table(b,span(b)):"");
+}
+let seaOn=false;
+function openSea(){ seaOn=true; $("sea").hidden=false; drawSea(); }
+function closeSea(){ seaOn=false; $("sea").hidden=true; }
+$("hint").addEventListener("click",e=>{ if(e.target.textContent.includes("▶")||!seaOn) openSea(); });
+$("sea").addEventListener("click",()=>{ if(!matchMedia("(orientation:portrait)").matches) closeSea(); });
 
 /* ---------- tide ---------- */
 let tides=[];
@@ -682,6 +761,8 @@ const KEY={up:["ArrowUp"],down:["ArrowDown"],ok:["Enter"," "],back:["Backspace",
   left:["ArrowLeft"],right:["ArrowRight"],chUp:["ChannelUp","PageUp"],chDown:["ChannelDown","PageDown"]};
 const is=(e,k)=>KEY[k].includes(e.key)||(k==="back"&&[461,10009,8,27].includes(e.keyCode))||(k==="chUp"&&e.keyCode===427)||(k==="chDown"&&e.keyCode===428);
 addEventListener("keydown",e=>{
+  if(!tvOn && seaOn){ if(is(e,"back")||is(e,"left")||is(e,"right")){e.preventDefault();closeSea();} else if(is(e,"ok")){e.preventDefault();closeSea();openTV();} return; }
+  if(!tvOn && is(e,"right")){ e.preventDefault(); openSea(); return; }
   if(!tvOn){ if(is(e,"ok")||is(e,"chUp")||is(e,"chDown")||/^[0-9]$/.test(e.key)){e.preventDefault();openTV();} return; }
   const listOpen=!$("chlist").classList.contains("hide");
   if(/^[0-9]$/.test(e.key)){ numBuf+=e.key; clearTimeout(numTimer); banner(numBuf,"kanalas");
