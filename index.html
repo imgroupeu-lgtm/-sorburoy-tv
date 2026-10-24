@@ -31,7 +31,7 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:calc(
   text-shadow:0 calc(.08*var(--u)) calc(.5*var(--u)) rgba(0,10,20,.35)}
 #sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
 .screen{position:relative;z-index:1;height:100%;width:min(100%, calc(100vh * 16 / 9));margin:0 auto;display:grid;
-  grid-template-columns:1fr 1.15fr .95fr;grid-template-rows:minmax(0,1fr) auto;gap:calc(1.2*var(--u));padding:calc(2*var(--u)) calc(2.4*var(--u)) calc(1.6*var(--u))}
+  grid-template-columns:.95fr 2.05fr;grid-template-rows:minmax(0,1fr) auto;gap:calc(1.2*var(--u));padding:calc(2*var(--u)) calc(2.4*var(--u)) calc(1.6*var(--u))}
 .panel{background:var(--glass);border:1px solid var(--glass-edge);border-radius:calc(1.2*var(--u));padding:calc(1.1*var(--u)) calc(1.4*var(--u));overflow:hidden;
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);min-width:0}
 .label{font-size:calc(.85*var(--u));font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2)}
@@ -96,6 +96,30 @@ body{background:#0b1d2b;color:var(--ink);font-family:var(--body);font-size:calc(
 .sw-waves b{color:var(--ink);font-family:var(--display);font-size:calc(1.35*var(--u));font-weight:500}
 .sw-axis{display:flex;justify-content:space-between;font-size:calc(.9*var(--u));color:var(--ink-2);font-variant-numeric:tabular-nums}
 
+/* unified weather panel */
+.wx{display:grid!important;grid-template-columns:1.05fr 1fr;gap:calc(1.4*var(--u))!important;align-items:start}
+.wx-now{display:flex;flex-direction:column;gap:calc(.7*var(--u));min-width:0}
+.wx-week{display:flex;flex-direction:column;gap:calc(.4*var(--u));min-width:0}
+.now{grid-template-columns:auto auto 1fr!important}
+.icon.big{width:calc(6*var(--u));height:calc(6*var(--u))}
+.sunline{font-size:calc(1.15*var(--u));color:var(--ink-2)}
+.sunline b{font-family:var(--display);font-weight:500;color:var(--lamp);font-size:calc(1.45*var(--u))}
+table.wk{width:100%;border-collapse:separate;border-spacing:0 calc(.3*var(--u));font-variant-numeric:tabular-nums}
+.wk th{font-size:calc(.8*var(--u));font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);text-align:center;padding:0 calc(.3*var(--u))}
+.wk th:first-child,.wk td:first-child{text-align:left}
+.wk td{background:rgba(255,255,255,.05);text-align:center;padding:calc(.3*var(--u)) calc(.4*var(--u));font-size:calc(1.15*var(--u))}
+.wk td:first-child{border-radius:calc(.6*var(--u)) 0 0 calc(.6*var(--u))}
+.wk td:last-child{border-radius:0 calc(.6*var(--u)) calc(.6*var(--u)) 0}
+.wk tr.today td{background:rgba(255,199,102,.12)}
+.wk .dn{display:block;font-weight:600;font-size:calc(1.3*var(--u));text-transform:capitalize}
+.wk tr.today .dn{color:var(--lamp)}
+.wk .dd{display:block;font-size:calc(.85*var(--u));color:var(--ink-2)}
+.wk .icon{width:calc(2.8*var(--u));height:calc(2.8*var(--u))}
+.wk .tmax{font-family:var(--display);font-size:calc(2.3*var(--u));font-weight:600;color:var(--lamp)}
+.wk .tmin{font-family:var(--display);font-size:calc(1.7*var(--u));font-weight:500;color:#9fd3ff}
+.wk .wchip{display:inline-block;min-width:calc(2.4*var(--u));border-radius:calc(.4*var(--u));padding:0 calc(.35*var(--u));color:#0b2233;text-shadow:none;font-family:var(--display);font-size:calc(1.5*var(--u));font-weight:600}
+.wk .gst{font-family:var(--display);font-size:calc(1.3*var(--u));margin-left:calc(.4*var(--u));color:var(--ink)}
+.wk .pr{color:var(--kelp)}
 /* calendar */
 .cal{display:flex;flex-direction:column;gap:calc(.7*var(--u))}
 .cal-head{display:flex;justify-content:space-between;align-items:baseline}
@@ -235,6 +259,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
   .screen{zoom:2.3;width:calc(100vw / 2.3);height:auto;min-height:calc(100vh / 2.3);grid-template-columns:1fr;grid-template-rows:auto;
     padding-left:max(calc(1.6*var(--u)),env(safe-area-inset-left,0px));padding-right:max(calc(1.6*var(--u)),env(safe-area-inset-right,0px))}
   .tide{grid-template-columns:1fr}
+  .wx{grid-template-columns:1fr!important}
   .hint,.foot{display:none}
   #sea{position:static;zoom:2.3;width:calc(100vw / 2.3);display:flex!important;padding-top:0}
   #sea .back,#ferry .back{display:none}
@@ -255,51 +280,51 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
     <div class="time" id="time">--:--</div>
     <div class="minbar"><i id="minbar"></i></div>
     <div class="date" id="date"></div>
-    <div class="phase" id="phase"></div>
-    <div class="sun">
-      <div><span class="label">Saulėtekis</span><b id="sunrise">--:--</b></div>
-      <div><span class="label">Saulėlydis</span><b id="sunset">--:--</b></div>
-      <div><span class="label">Dienos ilgis</span><b id="daylen">--</b></div>
+    <div class="sunline">☀ <b id="sunrise">--:--</b> – <b id="sunset">--:--</b> · <span id="daylen">--</span> · <span id="phase"></span></div>
+    <div class="cal">
+      <div class="cal-head"><span class="cal-month" id="calmonth"></span><span class="label" id="calweek"></span></div>
+      <div class="grid" id="calgrid"></div>
+      <div class="hols" id="hols"></div>
     </div>
-    <div class="week"><span class="label">7 dienų prognozė · max / min · vėjas</span><div id="week"></div></div>
+    <div class="boat"><div class="boat-head"><span class="label">Hurtigbåt 820 · kitas reisas</span><span class="label">◀ 5 dienos</span></div><div id="boat"></div></div>
   </section>
 
   <section class="wx panel">
-    <div class="now">
-      <div class="temp num" id="temp">--<sup>°C</sup></div>
-      <div>
-        <div class="cond" id="cond">Kraunama…</div>
-        <div class="feels" id="feels"></div>
+    <div class="wx-now">
+      <div class="now">
+        <div class="nowicon" id="nowicon"></div>
+        <div class="temp num" id="temp">--<sup>°C</sup></div>
+        <div>
+          <div class="cond" id="cond">Kraunama…</div>
+          <div class="feels" id="feels"></div>
+        </div>
+      </div>
+      <div class="wind">
+        <svg class="compass" viewBox="-50 -50 100 100" aria-hidden="true">
+          <circle r="46" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="3"/>
+          <circle r="46" fill="none" stroke="var(--lamp)" stroke-width="3" stroke-dasharray="4 10" opacity=".35"/>
+          <text y="-31" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)" font-family="Source Sans 3,Arial">Š</text>
+          <g id="arrow"><g id="arrowWob"><path d="M0,-30 L11,14 L0,6 L-11,14 Z" fill="var(--lamp)"/></g></g>
+        </svg>
+        <div>
+          <div class="speed num" id="wspeed">--<small>m/s</small></div>
+          <div class="beau" id="beau"></div>
+        </div>
+        <div class="detail" id="wdetail"></div>
+      </div>
+      <div class="seawind">
+        <div class="sw-head"><span class="label">Vėjas jūroje · 4 val. kas 15 min</span><span class="sw-legend"><i class="lg-s"></i>vidutinis <i class="lg-g"></i>gūsiai</span></div>
+        <div class="sw-alert" id="swalert"></div>
+        <svg id="swchart" viewBox="0 0 1000 300" preserveAspectRatio="none"></svg>
+        <div class="sw-axis" id="swaxis"></div>
+        <div class="sw-waves" id="swwaves"></div>
+        <div class="sw-waves" id="swobs"></div>
       </div>
     </div>
-    <div class="wind">
-      <svg class="compass" viewBox="-50 -50 100 100" aria-hidden="true">
-        <circle r="46" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="3"/>
-        <circle r="46" fill="none" stroke="var(--lamp)" stroke-width="3" stroke-dasharray="4 10" opacity=".35"/>
-        <text y="-31" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)" font-family="Source Sans 3,Arial">Š</text>
-        <g id="arrow"><g id="arrowWob"><path d="M0,-30 L11,14 L0,6 L-11,14 Z" fill="var(--lamp)"/></g></g>
-      </svg>
-      <div>
-        <div class="speed num" id="wspeed">--<small>m/s</small></div>
-        <div class="beau" id="beau"></div>
-      </div>
-      <div class="detail" id="wdetail"></div>
+    <div class="wx-week">
+      <div class="label">7 dienų prognozė · Sørburøya</div>
+      <table class="wk"><thead><tr><th>Diena</th><th></th><th>Dieną</th><th>Naktį</th><th>Vėjas · gūsiai</th><th>Krituliai</th></tr></thead><tbody id="week"></tbody></table>
     </div>
-    <div class="seawind">
-      <div class="sw-head"><span class="label">Vėjas jūroje · 4 val. kas 15 min</span><span class="sw-legend"><i class="lg-s"></i>vidutinis <i class="lg-g"></i>gūsiai</span></div>
-      <div class="sw-alert" id="swalert"></div>
-      <div class="sw-waves" id="swwaves"></div>
-      <div class="sw-waves" id="swobs"></div>
-      <svg id="swchart" viewBox="0 0 1000 300" preserveAspectRatio="none"></svg>
-      <div class="sw-axis" id="swaxis"></div>
-    </div>
-  </section>
-
-  <section class="cal panel">
-    <div class="cal-head"><span class="cal-month" id="calmonth"></span><span class="label" id="calweek"></span></div>
-    <div class="grid" id="calgrid"></div>
-    <div class="hols" id="hols"></div>
-    <div class="boat"><div class="boat-head"><span class="label">Hurtigbåt 820 · kitas reisas</span><span class="label">◀ 5 dienos</span></div><div id="boat"></div></div>
   </section>
 
   <section class="tide panel">
@@ -349,7 +374,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261024225224";
+const BUILD="20261024225453";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -405,7 +430,7 @@ async function loadWeather(){
   try{
     const u=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}`+
       `&minutely_15=wind_speed_10m,wind_gusts_10m,wind_direction_10m&forecast_minutely_15=24&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,is_day,cloud_cover,precipitation`+
-      `&hourly=temperature_2m,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation,is_day&daily=sunrise,sunset,daylight_duration,weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max`+
+      `&hourly=temperature_2m,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation,is_day&daily=sunrise,sunset,daylight_duration,weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,precipitation_sum`+
       `&wind_speed_unit=ms&timezone=${encodeURIComponent(TZ)}&forecast_days=7&timeformat=unixtime`;
     const r=await fetch(u); if(!r.ok) throw new Error(r.status);
     const d=await r.json(), c=d.current;
@@ -424,14 +449,19 @@ async function loadWeather(){
     const dl=d.daily.daylight_duration[0];
     $("daylen").textContent=`${Math.floor(dl/3600)} val ${Math.round(dl%3600/60)} min`;
     drawSeaWind(d); SEA.wx=d; drawSea();
-    const D=d.daily, lo=Math.min(...D.temperature_2m_min), hi=Math.max(...D.temperature_2m_max), span=(hi-lo)||1;
+    const D=d.daily;
+    $("nowicon").innerHTML=icon(c.weather_code,c.is_day).replace('class="icon"','class="icon big"');
     $("week").innerHTML=D.time.map((t,i)=>{
-      const day=i===0?"Šiandien":new Date(t*1e3+12*3600e3).toLocaleDateString("lt-LT",{timeZone:TZ,weekday:"short"});
-      const a=(D.temperature_2m_min[i]-lo)/span*100, b=(D.temperature_2m_max[i]-lo)/span*100;
-      return `<div class="wd"><span class="dn${i===0?" today":""}">${day}</span>${icon(D.weather_code[i],1)}
-        <span class="bar"><i style="left:${a}%;width:${Math.max(4,b-a)}%"></i></span>
-        <span class="tt">${Math.round(D.temperature_2m_max[i])}°<span>/${Math.round(D.temperature_2m_min[i])}°</span></span>
-        <span class="ww">${Math.round(D.wind_speed_10m_max[i])} m/s</span></div>`;}).join("");
+      const dt=new Date(t*1e3+12*3600e3);
+      const day=i===0?"Šiandien":i===1?"Rytoj":dt.toLocaleDateString("lt-LT",{timeZone:TZ,weekday:"long"});
+      const date=dt.toLocaleDateString("lt-LT",{timeZone:TZ,day:"numeric",month:"numeric"});
+      const pr=D.precipitation_sum[i];
+      return `<tr class="${i===0?"today":""}"><td><span class="dn">${day}</span><span class="dd">${date}</span></td>
+        <td>${icon(D.weather_code[i],1)}</td>
+        <td class="tmax">${Math.round(D.temperature_2m_max[i])}°</td>
+        <td class="tmin">${Math.round(D.temperature_2m_min[i])}°</td>
+        <td><span class="wchip" style="background:${windColor(D.wind_speed_10m_max[i])}">${Math.round(D.wind_speed_10m_max[i])}</span><span class="gst">${Math.round(D.wind_gusts_10m_max[i])}</span> m/s</td>
+        <td class="pr">${pr>=0.1?pr.toFixed(1)+" mm":"–"}</td></tr>`;}).join("");
     $("upd").textContent="atnaujinta "+fmtT(new Date());
   }catch(e){ $("cond").innerHTML=`<span class="err">Orų nepavyko gauti. Bandysiu vėl po 5 min.</span>`; setTimeout(loadWeather,300000); }
 }
