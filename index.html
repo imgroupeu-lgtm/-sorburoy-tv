@@ -367,7 +367,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261024230817";
+const BUILD="20261024230930";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -524,7 +524,7 @@ async function loadObs(){
 /* ---------- ferry 820 via Entur (same data as the AtB app), 5 days ---------- */
 const STOP_SORBUROY="NSR:StopPlace:42925", STOP_DYROY="NSR:StopPlace:60419", STOP_DYROY_BUS="NSR:StopPlace:43525";
 async function entur(stop){
-  const q=`{stopPlace(id:"${stop}"){estimatedCalls(numberOfDepartures:80,timeRange:432000,arrivalDeparture:both){realtime cancellation aimedArrivalTime expectedArrivalTime aimedDepartureTime expectedDepartureTime destinationDisplay{frontText} serviceJourney{id line{publicCode}}}}}`;
+  const q=`{stopPlace(id:"${stop}"){estimatedCalls(numberOfDepartures:250,timeRange:432000,arrivalDeparture:both,whiteListed:{lines:["ATB:Line:2_820"]}){realtime cancellation aimedArrivalTime expectedArrivalTime aimedDepartureTime expectedDepartureTime destinationDisplay{frontText} serviceJourney{id line{publicCode}}}}}`;
   const r=await fetch("https://api.entur.io/journey-planner/v3/graphql",{method:"POST",headers:{"Content-Type":"application/json","ET-Client-Name":"imgroupeu-sorburoy-tv"},body:JSON.stringify({query:q})});
   const d=await r.json(); return (d.data?.stopPlace?.estimatedCalls||[]).filter(c=>c.serviceJourney.line.publicCode==="820");
 }
