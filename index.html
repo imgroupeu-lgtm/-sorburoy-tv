@@ -238,6 +238,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 .25vw;font-variant
       <div class="sw-head"><span class="label">Vėjas jūroje · 4 val. kas 15 min</span><span class="sw-legend"><i class="lg-s"></i>vidutinis <i class="lg-g"></i>gūsiai</span></div>
       <div class="sw-alert" id="swalert"></div>
       <div class="sw-waves" id="swwaves"></div>
+      <div class="sw-waves" id="swobs"></div>
       <svg id="swchart" viewBox="0 0 1000 300" preserveAspectRatio="none"></svg>
       <div class="sw-axis" id="swaxis"></div>
     </div>
@@ -258,15 +259,15 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 .25vw;font-variant
   </section>
 </main>
 <div class="foot">Orai: Open-Meteo (MET Norway modelis) · Potvyniai: Kartverket, CC BY 4.0 · <span id="upd"></span></div>
-<div class="hint" id="hint"><kbd>OK</kbd> televizija · <kbd>▶</kbd> jūros prognozė 48 val.</div>
+<div class="hint" id="hint"><kbd>OK</kbd> televizija · <kbd>▶</kbd> jūros prognozė</div>
 
 <section id="sea" hidden>
-  <div class="sea-head"><h2>Jūros prognozė · Sørburøya · 48 val.</h2><span class="label back">◀ atgal</span></div>
+  <div class="sea-head"><h2>Jūros prognozė · Sørburøya · dienos metu 06–20 val.</h2><span class="label back">◀ atgal</span></div>
   <div class="sea-legend">
     <span><i style="background:#7fdcc6"></i>iki 5 m/s</span><span><i style="background:#b9e48a"></i>5–8</span>
     <span><i style="background:#ffc766"></i>8–11</span><span><i style="background:#ff9f5a"></i>11–14</span><span><i style="background:#ff6b6b"></i>14+ m/s</span>
     <span>· bangos: <i style="background:#7fdcc6"></i>iki 0.5 m <i style="background:#ffc766"></i>0.5–1.5 <i style="background:#ff6b6b"></i>1.5+ m</span>
-    <span>· tamsios eilutės – naktis</span>
+    <span>· tamsios eilutės – tamsu (prieš saulėtekį / po saulėlydžio)</span>
   </div>
   <div class="sea-tables" id="seatables"><div class="panel sea-t">Kraunama…</div></div>
 </section>
@@ -413,6 +414,20 @@ async function loadWaves(){
   }catch(e){ $("swwaves").textContent="Bangų prognozės šiuo metu nepavyko gauti."; }
 }
 
+/* ---------- measured wind at nearby stations (obs.json written by a GitHub Action from MET Frost) ---------- */
+async function loadObs(){
+  try{
+    const r=await fetch("obs.json?t="+Date.now()); if(!r.ok) throw 0; const o=await r.json();
+    const parts=o.stations.filter(st=>st.speed!=null).map(st=>{
+      const ago=st.time?Math.round((Date.now()-new Date(st.time))/60e3):null;
+      return `${st.name}: <b style="color:${windColor(st.speed)}">${st.speed.toFixed(1)} m/s</b>`+
+        (st.gust!=null?`, gūs. ${Math.round(st.gust)}`:"")+(st.dir!=null?` iš ${dirName(st.dir)}`:"")+
+        (ago!=null?` <span style="opacity:.7">(prieš ${ago} min)</span>`:"");
+    });
+    $("swobs").innerHTML=parts.length?"Išmatuota dabar · "+parts.join(" · "):"";
+  }catch(e){ $("swobs").textContent=""; }
+}
+
 /* ---------- sea forecast tables, 48 h in 3-h steps ---------- */
 const SEA={wx:null,mar:null};
 const waveColor=h=>h<.5?"#7fdcc6":h<1.5?"#ffc766":"#ff6b6b";
@@ -420,11 +435,13 @@ const arrow=(deg,col="var(--ink)")=>`<svg class="arr" viewBox="-10 -10 20 20" st
 function drawSea(){
   const d=SEA.wx; if(!d) return;
   const H=d.hourly, now=Date.now()/1e3;
-  let i0=H.time.findIndex(t=>t+3600>now); if(i0<0) return;
-  // start on the next whole 3-hour mark so rows read 00,03,06…
-  while(i0<H.time.length && new Date(H.time[i0]*1e3).toLocaleString("en-US",{timeZone:TZ,hour:"numeric",hour12:false})%3!==0) i0++;
+  // daytime windows 06:00–20:00 every 2 h; the next two windows that have not ended yet
+  const hourOf=t=>+new Date(t*1e3).toLocaleString("en-US",{timeZone:TZ,hour:"numeric",hour12:false})%24;
+  const dayOf=t=>new Date(t*1e3).toLocaleDateString("en-CA",{timeZone:TZ});
+  const byDay={};
+  H.time.forEach((t,i)=>{const h=hourOf(t); if(h>=6&&h<=20&&h%2===0&&t+7200>now){(byDay[dayOf(t)]??=[]).push(i);}});
+  const days=Object.keys(byDay).sort().slice(0,2);
   const M=SEA.mar?.hourly, mIdx=t=>M?M.time.indexOf(t):-1;
-  const rows=[]; for(let k=0;k<16;k++){const i=i0+k*3; if(i<H.time.length) rows.push(i);}
   const table=(part,title)=>{
     let h=`<div class="panel sea-t"><h3>${title}</h3><table class="st"><thead><tr><th>Laikas</th><th>Vėjas</th><th>Gūsiai</th><th>Kryptis</th><th>Bangos</th><th>Periodas</th><th>Orai</th><th>Kritul.</th></tr></thead><tbody>`;
     for(const i of part){
@@ -442,10 +459,11 @@ function drawSea(){
     }
     return h+`</tbody></table></div>`;
   };
-  const a=rows.slice(0,8), b=rows.slice(8,16);
-  const span=part=>{const f=new Date(H.time[part[0]]*1e3),l=new Date(H.time[part.at(-1)]*1e3);
-    const o={timeZone:TZ,weekday:"long",day:"numeric",month:"short"};return `${f.toLocaleDateString("lt-LT",o)} ${fmtT(f)} – ${fmtT(l)}`;};
-  $("seatables").innerHTML=table(a,span(a))+(b.length?table(b,span(b)):"");
+  const today=dayOf(now);
+  const title=k=>{const part=byDay[k], f=new Date(H.time[part[0]]*1e3);
+    const nm=k===today?"Šiandien":k===dayOf(now+86400)?"Rytoj":"Poryt";
+    return `${nm} · ${f.toLocaleDateString("lt-LT",{timeZone:TZ,weekday:"long",day:"numeric",month:"short"})} · 06–20 val.`;};
+  $("seatables").innerHTML=days.map(k=>table(byDay[k],title(k))).join("");
 }
 let seaOn=false;
 function openSea(){ seaOn=true; $("sea").hidden=false; drawSea(); }
@@ -780,6 +798,7 @@ addEventListener("keydown",e=>{
 drawCal(); setInterval(drawCal,60e3);
 loadWeather(); loadTide(); loadWaves();
 setInterval(loadWaves,30*60e3);
+loadObs(); setInterval(loadObs,5*60e3);
 // keep a phone/tablet screen awake while the page is open
 let wl=null;async function wake(){try{wl=await navigator.wakeLock?.request("screen");}catch(e){}}
 wake();document.addEventListener("visibilitychange",()=>{if(!document.hidden)wake();});addEventListener("click",wake,{once:true});
