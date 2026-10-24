@@ -120,6 +120,11 @@ table.wk{width:100%;border-collapse:separate;border-spacing:0 calc(.3*var(--u));
 .wk .wchip{display:inline-block;min-width:calc(2.4*var(--u));border-radius:calc(.4*var(--u));padding:0 calc(.35*var(--u));color:#0b2233;text-shadow:none;font-family:var(--display);font-size:calc(1.5*var(--u));font-weight:600}
 .wk .gst{font-family:var(--display);font-size:calc(1.3*var(--u));margin-left:calc(.4*var(--u));color:var(--ink)}
 .wk .pr{color:var(--kelp)}
+.alerts{display:flex;flex-direction:column;gap:calc(.3*var(--u))}
+.alerts:empty{display:none}
+.alert{display:flex;gap:calc(.6*var(--u));align-items:baseline;border-radius:calc(.6*var(--u));padding:calc(.4*var(--u)) calc(.8*var(--u));font-size:calc(1.05*var(--u));color:#0b2233;text-shadow:none;line-height:1.3}
+.alert b{font-size:calc(1.15*var(--u))}
+.alert.yellow{background:#ffd54a} .alert.orange{background:#ff9a3c} .alert.red{background:#ff5a5a;color:#fff}
 /* calendar */
 .cal{display:flex;flex-direction:column;gap:calc(.35*var(--u))}
 .cal-head{display:flex;justify-content:space-between;align-items:baseline}
@@ -246,7 +251,8 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 .ch{cursor:pointer}
 @media (pointer:coarse) and (orientation:landscape){
   #sea{--u:calc(1.55vw);padding:12px max(14px,env(safe-area-inset-right,0px)) 80px max(14px,env(safe-area-inset-left,0px))}
-  #sea .sea-tables{grid-template-columns:1fr}
+  #sea .sea-tables{grid-template-columns:1fr;flex-shrink:0;min-height:auto}
+  #sea .panel{overflow:visible;flex-shrink:0}
   #sea .back{display:none}
   .seaclose{display:inline-block}
 }
@@ -305,6 +311,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
           <div class="feels" id="feels"></div>
         </div>
       </div>
+      <div class="alerts" id="alerts"></div>
       <div class="wind">
         <svg class="compass" viewBox="-50 -50 100 100" aria-hidden="true">
           <circle r="46" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="3"/>
@@ -374,7 +381,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261024231302";
+const BUILD="20261024231502";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -499,6 +506,18 @@ function drawSeaWind(d){
   else { msg=`Per 4 val. vėjas pastovus: ${Math.round(Math.min(...sp))}–${Math.round(maxS)} m/s, gūsiai iki ${Math.round(maxG)} m/s.`; }
   cls=maxG>=14||maxS>=11?"bad":maxG>=10||maxS>=8?"warn":"calm";
   const el=$("swalert"); el.className="sw-alert "+cls; el.textContent=msg;
+}
+
+/* ---------- official MET Norway warnings (farevarsel) for Sørburøy ---------- */
+const AL_EV={gale:"Kuling",wind:"Vėjas",stormSurge:"Audros banga",rain:"Liūtis",snow:"Sniegas",ice:"Apledėjimas",icing:"Apledėjimas",polarLow:"Poliarinė žemuma",lightning:"Žaibai",blowingSnow:"Pūga",avalanches:"Lavinos",flood:"Potvynis",landslide:"Nuošliaužos",forestFire:"Miškų gaisrų pavojus"};
+const AL_LV={yellow:"geltonas",orange:"oranžinis",red:"raudonas"};
+async function loadAlerts(){
+  try{
+    const j=await (await fetch(`https://api.met.no/weatherapi/metalerts/2.0/current.json?lat=${LAT}&lon=${LON}`)).json();
+    $("alerts").innerHTML=(j.features||[]).map(f=>{const p=f.properties, lv=(p.awareness_level||"").split(";")[1]?.trim()||"yellow";
+      const [a,b]=f.when?.interval||[]; const span=a?`${new Date(a).toLocaleString("lt-LT",{timeZone:TZ,weekday:"short",hour:"2-digit",minute:"2-digit"})} – ${new Date(b).toLocaleString("lt-LT",{timeZone:TZ,weekday:"short",hour:"2-digit",minute:"2-digit"})}`:"";
+      return `<div class="alert ${lv}"><b>⚠ ${AL_EV[p.event]||p.event} · ${AL_LV[lv]||lv} lygis</b><span>${span}</span></div>`;}).join("");
+  }catch(e){ $("alerts").innerHTML=""; }
 }
 
 /* ---------- waves (Open-Meteo marine) ---------- */
@@ -1004,6 +1023,7 @@ drawCal(); setInterval(drawCal,60e3);
 loadWeather(); loadTide(); loadWaves();
 setInterval(loadWaves,30*60e3);
 loadObs(); setInterval(loadObs,5*60e3);
+loadAlerts(); setInterval(loadAlerts,15*60e3);
 loadBoat(); setInterval(loadBoat,60e3);
 // keep a phone/tablet screen awake while the page is open
 let wl=null;async function wake(){try{wl=await navigator.wakeLock?.request("screen");}catch(e){}}
