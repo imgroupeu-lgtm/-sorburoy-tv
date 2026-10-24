@@ -340,7 +340,8 @@ function drawTide(){
     let dot=document.getElementById("nowdot");
     if(!dot){dot=document.createElementNS("http://www.w3.org/2000/svg","svg");dot.id="nowdot";
       dot.setAttribute("style","position:absolute;pointer-events:none;overflow:visible");svgEl.parentNode.style.position="relative";svgEl.parentNode.appendChild(dot);}
-    dot.style.left=(svgEl.offsetLeft)+"px";dot.style.top=(svgEl.offsetTop)+"px";dot.setAttribute("width",w);dot.setAttribute("height",h);
+    const pr=svgEl.parentNode.getBoundingClientRect(), sr=svgEl.getBoundingClientRect();
+    dot.style.left=(sr.left-pr.left)+"px";dot.style.top=(sr.top-pr.top)+"px";dot.setAttribute("width",w);dot.setAttribute("height",h);
     dot.innerHTML=`<circle class="pulse" cx="${cx}" cy="${cy}" r="${w/160}" fill="var(--lamp)" opacity=".5"/><circle cx="${cx}" cy="${cy}" r="${w/220}" fill="var(--lamp)"/>`;
   }
   const nextIdx=tides.findIndex(x=>x.t>now);
