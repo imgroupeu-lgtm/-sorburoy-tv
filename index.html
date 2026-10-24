@@ -209,6 +209,20 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 .25vw;font-variant
 .ft.st-cx .tm{text-decoration:line-through}
 .fnone{font-size:1vw;color:var(--ink-2)}
 .boat{cursor:pointer}
+/* touch devices (phones, tablets): tap buttons instead of a remote */
+.touchnav{display:none;position:fixed;z-index:6;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));gap:8px}
+.touchnav button,.tvclose{font:600 15px/1 var(--body);color:var(--ink);background:rgba(7,22,32,.82);border:1px solid var(--glass-edge);border-radius:999px;padding:11px 16px;cursor:pointer}
+.tvclose{display:none;position:absolute;z-index:7;right:max(12px,env(safe-area-inset-right,0px));top:calc(12px + env(safe-area-inset-top,0px))}
+.ch{cursor:pointer}
+@media (pointer:coarse){
+  .touchnav{display:flex}
+  .tvclose{display:block}
+  .hint{display:none}
+  .chlist{width:min(78vw,340px)}
+  .ch{font-size:16px;padding:9px 10px;grid-template-columns:28px 1fr auto}
+  .chgroup{font-size:11px}
+  .tvhelp{display:none}
+}
 /* phone / tablet held upright: one column, scaled up, scrollable */
 @media (orientation:portrait){
   body{overflow-y:auto;overflow-x:hidden}
@@ -293,6 +307,12 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 .25vw;font-variant
 <div class="foot">Orai: Open-Meteo (MET Norway modelis) · Potvyniai: Kartverket, CC BY 4.0 · <span id="upd"></span></div>
 <div class="hint" id="hint"><kbd>OK</kbd> televizija · <kbd>▶</kbd> jūros prognozė · <kbd>◀</kbd> keltas 820</div>
 
+<nav class="touchnav" id="touchnav">
+  <button type="button" id="nav-tv">📺 TV kanalai</button>
+  <button type="button" id="nav-sea">🌊 Jūra</button>
+  <button type="button" id="nav-ferry">⛴ Keltas 820</button>
+</nav>
+
 <section id="sea" hidden>
   <div class="sea-head"><h2>Jūros prognozė · Sørburøya · dienos metu 06–20 val.</h2><span class="label back">◀ atgal</span></div>
   <div class="sea-legend">
@@ -316,6 +336,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 .25vw;font-variant
   <div class="tvmsg" id="tvmsg"></div>
   <div class="banner hide" id="banner"><span class="bn" id="bname"></span><span class="bt" id="btext"></span></div>
   <nav class="chlist" id="chlist"></nav>
+  <button type="button" class="tvclose" id="tvclose">✕ Uždaryti</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
@@ -525,6 +546,10 @@ async function loadBoat(){
   }catch(e){ $("boat").innerHTML=`<span style="color:var(--ink-2);font-size:1vw">Keltų duomenų nepavyko gauti.</span>`; }
 }
 let ferryOn=false;
+const portrait=()=>matchMedia("(orientation:portrait)").matches;
+$("nav-tv").addEventListener("click",e=>{e.stopPropagation();closeSea();closeFerry();openTV();});
+$("nav-sea").addEventListener("click",e=>{e.stopPropagation();if(portrait())$("sea").scrollIntoView({behavior:"smooth"});else{closeFerry();openSea();}});
+$("nav-ferry").addEventListener("click",e=>{e.stopPropagation();if(portrait())$("ferry").scrollIntoView({behavior:"smooth"});else{closeSea();openFerry();}});
 function openFerry(){ ferryOn=true; $("ferry").hidden=false; }
 function closeFerry(){ ferryOn=false; $("ferry").hidden=true; }
 $("ferry").addEventListener("click",()=>{ if(!matchMedia("(orientation:portrait)").matches) closeFerry(); });
@@ -875,6 +900,9 @@ function play(i){
   else fail();
   renderList(); showList();
 }
+$("chlist").addEventListener("click",e=>{const el=e.target.closest(".ch");if(!el)return;e.stopPropagation();sel=+el.id.slice(2);play(sel);});
+$("tvclose").addEventListener("click",e=>{e.stopPropagation();closeTV();});
+$("tv").addEventListener("click",()=>{showList();});
 function openTV(){ tvOn=true; $("tv").hidden=false; renderList(); showList(); if(playing<0) play(sel); }
 function closeTV(){ tvOn=false; stop(); playing=-1; $("tv").hidden=true; }
 const KEY={up:["ArrowUp"],down:["ArrowDown"],ok:["Enter"," "],back:["Backspace","Escape","GoBack","BrowserBack","XF86Back"],
