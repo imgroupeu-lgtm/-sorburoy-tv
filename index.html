@@ -223,12 +223,12 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
   -webkit-mask-image:linear-gradient(#000 85%,transparent);mask-image:linear-gradient(#000 85%,transparent)}
 .bday{font-size:calc(.85*var(--u));font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--kelp);margin-top:calc(.3*var(--u))}
 .bday span{color:var(--ink-2);margin-left:calc(.3*var(--u))}
-.brow{display:grid;grid-template-columns:calc(4*var(--u)) 1fr auto;gap:calc(.5*var(--u));align-items:baseline;font-size:calc(1*var(--u));padding:calc(.15*var(--u)) calc(.4*var(--u));border-radius:calc(.4*var(--u));background:rgba(255,255,255,.05)}
+.brow{display:grid;grid-template-columns:calc(4*var(--u)) 1fr;gap:calc(.5*var(--u));align-items:baseline;font-size:calc(1*var(--u));padding:calc(.15*var(--u)) calc(.4*var(--u));border-radius:calc(.4*var(--u));background:rgba(255,255,255,.05)}
 .brow .bt-t{font-family:var(--display);font-size:calc(1.35*var(--u));font-weight:500}
 .brow .bt-t s{font-size:calc(.85*var(--u));color:var(--ink-2);margin-left:calc(.25*var(--u))}
 .brow .bt-d{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brow .tm2{font-family:var(--display);font-weight:600}
-.brow .bt-c{display:flex;gap:calc(.3*var(--u));white-space:nowrap}
+.brow .bt-c{grid-column:2;display:flex;flex-wrap:wrap;gap:calc(.3*var(--u))}
 .brow.past{opacity:.4}
 .brow.st-ok{box-shadow:inset calc(.25*var(--u)) 0 0 var(--kelp)} .brow.st-late{box-shadow:inset calc(.25*var(--u)) 0 0 var(--lamp)} .brow.st-cx{box-shadow:inset calc(.25*var(--u)) 0 0 #ff6b6b}
 .cn{display:inline-block;font-size:calc(.85*var(--u));font-weight:600;border-radius:calc(.3*var(--u));padding:0 calc(.35*var(--u))}
@@ -285,7 +285,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
       <div class="grid" id="calgrid"></div>
       <div class="hols" id="hols"></div>
     </div>
-    <div class="boat"><div class="boat-head"><span class="label">Keltas 820 · Sørburøy ⇄ Dyrøy · jungtys Dyrøy</span><span class="label" id="boatupd"></span></div><div class="boatnote">🚕 Atplaukus į Dyrøy, kai nėra autobuso, reikia užsisakyti taksi iki Sistranda. AtB taksi už autobuso bilieto kainą – tik pažymėtiems reisams, užsakyti <b>bestill.atb.no</b> arba <b>02867</b> ne vėliau kaip 3 val. prieš (iki 10:00 – dieną prieš), jei gyveni ≥2 km nuo stotelės.</div><div class="boatlist" id="boat"></div></div>
+    <div class="boat"><div class="boat-head"><span class="label">Keltas 820 · Sørburøy ⇄ Dyrøy · jungtys Dyrøy</span><span class="label" id="boatupd"></span></div><div class="boatnote">Jungtys Dyrøy ⇄ Sistranda busstasjon iš Entur maršrutų planuoklio. 🚕 AtB taksi: <b>bestill.atb.no</b> / <b>02867</b>, ≥3 val. prieš (iki 10:00 – dieną prieš).</div><div class="boatlist" id="boat"></div></div>
   </section>
 
   <section class="wx panel">
@@ -367,7 +367,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261024230307";
+const BUILD="20261024230442";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -533,6 +533,21 @@ async function enturBus(){
   const r=await fetch("https://api.entur.io/journey-planner/v3/graphql",{method:"POST",headers:{"Content-Type":"application/json","ET-Client-Name":"imgroupeu-sorburoy-tv"},body:JSON.stringify({query:q})});
   const d=await r.json(); return (d.data?.stopPlace?.estimatedCalls||[]).filter(c=>!c.cancellation);
 }
+// Entur journey planner: real connection Dyrøy ⇄ Sistranda busstasjon (cached 30 min per trip)
+const STOP_SISTRANDA="NSR:StopPlace:42144", tripCache=new Map();
+async function planLeg(from,to,when,arriveBy){
+  const k=from+to+(+when)+arriveBy, hit=tripCache.get(k);
+  if(hit&&Date.now()-hit.at<30*60e3) return hit.v;
+  const q=`{trip(from:{place:"${from}"},to:{place:"${to}"},dateTime:"${when.toISOString()}",arriveBy:${arriveBy},numTripPatterns:1,walkSpeed:1.2){tripPatterns{startTime endTime legs{mode expectedStartTime line{publicCode flexibleLineType} bookingArrangements{latestBookingTime bookingNote bookingContact{phone url}}}}}}`;
+  let v=null;
+  try{const d=await fetch("https://api.entur.io/journey-planner/v3/graphql",{method:"POST",headers:{"Content-Type":"application/json","ET-Client-Name":"imgroupeu-sorburoy-tv"},body:JSON.stringify({query:q})}).then(r=>r.json());
+    const t=d.data?.trip?.tripPatterns?.[0];
+    if(t){const ride=t.legs.find(l=>l.mode!=="foot");
+      if(ride) v={start:new Date(t.startTime),end:new Date(t.endTime),line:ride.line?.publicCode||ride.mode,
+        flex:!!(ride.line?.flexibleLineType||ride.bookingArrangements),book:ride.bookingArrangements||null,dep:new Date(ride.expectedStartTime)};}
+  }catch(e){}
+  tripCache.set(k,{at:Date.now(),v}); return v;
+}
 // AtB "Bestillingstransport på Frøya": taxi at bus-ticket price from route 820 arriving Dyrøy kai Wed & Fri 10:30
 // (only if you live at least 2 km from the stop; book at bestill.atb.no or 02867, by the day before for times before 10:00)
 function taxiSlot(arrDyroy){ if(!arrDyroy) return false;
@@ -573,9 +588,18 @@ async function loadBoat(){
         arr:a&&a.expectedArrivalTime?new Date(a.expectedArrivalTime):null,feeder});});
     ev.sort((x,y)=>x.aim-y.aim);
     const now=new Date(), today=keyOf(osloToday());
+    const mine=ev.filter(e=>e.exp>now-30*60e3 && (e.kind==="in" || (e.kind==="out" && e.dyArr)));
+    await Promise.all(mine.map(async e=>{
+      if(e.kind==="out"){ // after arriving at Dyrøy: on to Sistranda within 90 min?
+        const t=await planLeg(STOP_DYROY_BUS,STOP_SISTRANDA,new Date(+e.dyArr+3*60e3),false);
+        e.toSis=t&&(t.dep-e.dyArr)<=90*60e3?t:null;
+      } else {            // getting to Dyrøy from Sistranda in time for the boat
+        const t=await planLeg(STOP_SISTRANDA,STOP_DYROY_BUS,new Date(+e.exp-5*60e3),true);
+        e.fromSis=t&&(e.exp-t.end)<=90*60e3&&t.end<=e.exp?t:null;
+      }}));
     // ferry list under the calendar: next 5 days, grouped by day
     let html="", lastDay="";
-    for(const e of ev.filter(e=>e.exp>now-30*60e3 && (e.kind==="in" || (e.kind==="out" && e.dyArr)))){
+    for(const e of mine){
       const dk=dayKey(e.aim);
       if(dk!==lastDay){ lastDay=dk;
         const dd=new Date(dk+"T12:00:00Z"), k=Math.round((dd-new Date(today+"T12:00:00Z"))/86400e3);
@@ -584,9 +608,13 @@ async function loadBoat(){
       const st=boatState(e.c,e.aim,e.exp), moved=e.c.realtime&&Math.abs(e.exp-e.aim)>=120e3;
       let what, conn="";
       if(e.kind==="out"){ what=`Sørburøy → Dyrøy <span class="tm2">${fmtT(e.dyArr)}</span>`;
-        conn=e.onward?`<span class="cn bus">🚌 ${e.onward.line} ${fmtT(e.onward.t)} → Sistranda</span>`:e.taxi?`<span class="cn taxi">🚕 AtB taksi – užsakyti</span>`:`<span class="cn need">🚕 reikia taksi</span>`; }
+        conn=e.toSis?(e.toSis.flex?`<span class="cn taxi">🚕 ${e.toSis.line} užsakomas ${fmtT(e.toSis.dep)} → Sistranda ${fmtT(e.toSis.end)}</span>`
+            :`<span class="cn bus">🚌 ${e.toSis.line} ${fmtT(e.toSis.dep)} → Sistranda ${fmtT(e.toSis.end)}</span>`)
+          :e.taxi?`<span class="cn taxi">🚕 AtB taksi – užsakyti iki Sistranda</span>`:`<span class="cn need">🚕 autobuso nėra – užsakyk taksi iki Sistranda</span>`; }
       else { what=`Dyrøy → Sørburøy${e.arr?` <span class="tm2">${fmtT(e.arr)}</span>`:""}`;
-        conn=e.feeder?`<span class="cn bus">🚌 ${e.feeder.line} į Dyrøy ${fmtT(e.feeder.t)}</span>`:`<span class="cn need">🚕 reikia taksi į Dyrøy</span>`; }
+        conn=e.fromSis?(e.fromSis.flex?`<span class="cn taxi">🚕 ${e.fromSis.line} užsakomas iš Sistranda ${fmtT(e.fromSis.dep)}</span>`
+            :`<span class="cn bus">🚌 ${e.fromSis.line} iš Sistranda ${fmtT(e.fromSis.dep)} → Dyrøy ${fmtT(e.fromSis.end)}</span>`)
+          :`<span class="cn need">🚕 autobuso nėra – taksi iš Sistranda į Dyrøy</span>`; }
       html+=`<div class="brow ${st.cls}${e.exp<now?" past":""}"><span class="bt-t">${fmtT(moved?e.exp:e.aim)}${moved?`<s>${fmtT(e.aim)}</s>`:""}</span><span class="bt-d">${what}</span><span class="bt-c">${st.txt?`<span class="bt-s ${st.chip}">${st.txt}</span>`:""}${conn}</span></div>`;
     }
     $("boat").innerHTML=html||`<span style="color:var(--ink-2)">Artimiausių reisų nerasta.</span>`;
