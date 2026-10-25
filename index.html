@@ -134,6 +134,7 @@ table.wk{width:100%;border-collapse:separate;border-spacing:0 calc(.3*var(--u));
 .grid .wk{font-size:calc(.85*var(--u));color:var(--ink-2);opacity:.7;align-self:center}
 .grid .d{font-family:var(--display);font-size:calc(1.2*var(--u));font-weight:500;padding:calc(.1*var(--u)) 0;border-radius:calc(.45*var(--u));position:relative}
 .grid .d.out{opacity:.3}
+.grid .d.wed::before{content:"🏫";position:absolute;top:-.1em;right:.05em;font-size:.55em}
 .grid .d.sun{color:var(--lamp)}
 .grid .d.hol{color:var(--kelp)}
 .grid .d.hol::after{content:"";position:absolute;left:50%;bottom:calc(.1*var(--u));width:calc(.32*var(--u));height:calc(.32*var(--u));margin-left:-calc(.16*var(--u));border-radius:50%;background:var(--kelp)}
@@ -388,7 +389,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261025155619";
+const BUILD="20261025155748";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -841,15 +842,16 @@ function drawCal(){
   const H=[...holidays(y),...holidays(y+1)], hset=new Set(H.map(h=>h.k));
   $("calmonth").textContent=new Date(Date.UTC(y,m,15)).toLocaleDateString("lt-LT",{month:"long",year:"numeric",timeZone:"UTC"});
   $("calweek").textContent=`${isoWeek(today)} savaitė · uke ${isoWeek(today)}`;
-  const first=new Date(Date.UTC(y,m,1)), off=(first.getUTCDay()+6)%7;
-  let start=addD(first,-off), html=`<span></span>`+["Pr","An","Tr","Kt","Pn","Št","Sk"].map(x=>`<span class="dh">${x}</span>`).join("");
-  for(let w=0;w<6;w++){
+  // this week and next week only (leaves room for the ferry list)
+  const off=(today.getUTCDay()+6)%7;
+  let start=addD(today,-off), html=`<span></span>`+["Pr","An","Tr","Kt","Pn","Št","Sk"].map(x=>`<span class="dh">${x}</span>`).join("");
+  for(let w=0;w<2;w++){
     const wkStart=addD(start,w*7);
-    if(w>0&&wkStart.getUTCMonth()!==m) break;
     html+=`<span class="wk">${isoWeek(wkStart)}</span>`;
     for(let i=0;i<7;i++){
       const d=addD(wkStart,i), k=keyOf(d), cls=["d"];
-      if(d.getUTCMonth()!==m) cls.push("out");
+      if(d<today) cls.push("out");
+      if(i===2) cls.push("wed");
       if(i===6) cls.push("sun");
       if(hset.has(k)) cls.push("hol");
       if(k===tk) cls.push("today");
