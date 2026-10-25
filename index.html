@@ -224,7 +224,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 .hint{cursor:pointer}
 .boat{display:flex;flex-direction:column;gap:calc(.25*var(--u));min-height:0;flex:1}
 .clock{min-height:0}
-.boatlist{display:flex;flex-direction:column;gap:calc(.15*var(--u));overflow:hidden;min-height:0;flex:1;
+.boatlist{display:flex;flex-direction:column;gap:calc(.15*var(--u));overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent;min-height:0;flex:1;padding-right:calc(.3*var(--u));
   -webkit-mask-image:linear-gradient(#000 85%,transparent);mask-image:linear-gradient(#000 85%,transparent)}
 .bday{font-size:calc(.85*var(--u));font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--kelp);margin-top:calc(.3*var(--u))}
 .bday span{color:var(--ink-2);margin-left:calc(.3*var(--u))}
@@ -240,6 +240,12 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 .cn.bus{background:rgba(127,220,198,.18);color:var(--kelp)}
 .cn.taxi{background:rgba(255,199,102,.2);color:var(--lamp)}
 .cn.need{background:rgba(255,107,107,.18);color:#ff9a8a}
+.school{font-size:calc(1*var(--u));line-height:1.35;border-radius:calc(.5*var(--u));padding:calc(.35*var(--u)) calc(.6*var(--u));background:rgba(127,220,198,.12)}
+.school:empty{display:none}
+.school b{font-weight:600}
+.school.warn{background:rgba(255,199,102,.22)}
+.school.bad{background:rgba(255,107,107,.25)}
+.school .why{display:block;color:var(--ink-2);font-size:calc(.9*var(--u))}
 .boatnote{font-size:calc(.85*var(--u));line-height:1.35;color:var(--ink-2);background:rgba(255,199,102,.08);border-left:calc(.25*var(--u)) solid var(--lamp);border-radius:calc(.3*var(--u));padding:calc(.3*var(--u)) calc(.5*var(--u))}
 .boatnote b{color:var(--ink)}
 .cn.none{color:var(--ink-2);font-weight:400}
@@ -298,6 +304,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
       <div class="grid" id="calgrid"></div>
       <div class="hols" id="hols"></div>
     </div>
+    <div class="school" id="school"></div>
     <div class="boat"><div class="boat-head"><span class="label">Keltas 820 · Sørburøy ⇄ Dyrøy</span><span class="label" id="boatupd"></span></div><div class="boatlist" id="boat"></div></div>
   </section>
 
@@ -349,7 +356,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
   </section>
 </main>
 <div class="foot">Orai: Open-Meteo (MET Norway modelis) · Potvyniai: Kartverket, CC BY 4.0 · <span id="upd"></span></div>
-<div class="hint" id="hint"><kbd>OK</kbd> televizija · <kbd>▶</kbd> jūros prognozė</div>
+<div class="hint" id="hint"><kbd>OK</kbd> televizija · <kbd>▶</kbd> jūros prognozė · <kbd>▲▼</kbd> keltų sąrašas</div>
 
 <nav class="touchnav" id="touchnav">
   <button type="button" id="nav-tv">📺 TV kanalai</button>
@@ -381,7 +388,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261024231502";
+const BUILD="20261025155619";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -437,7 +444,7 @@ async function loadWeather(){
   try{
     const u=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}`+
       `&minutely_15=wind_speed_10m,wind_gusts_10m,wind_direction_10m&forecast_minutely_15=24&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,is_day,cloud_cover,precipitation`+
-      `&hourly=temperature_2m,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation,is_day&daily=sunrise,sunset,daylight_duration,weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,precipitation_sum`+
+      `&hourly=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation,is_day&daily=sunrise,sunset,daylight_duration,weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,precipitation_sum`+
       `&wind_speed_unit=ms&timezone=${encodeURIComponent(TZ)}&forecast_days=7&timeformat=unixtime`;
     const r=await fetch(u); if(!r.ok) throw new Error(r.status);
     const d=await r.json(), c=d.current;
@@ -455,7 +462,7 @@ async function loadWeather(){
     $("sunset").textContent=fmtT(S.sunset);
     const dl=d.daily.daylight_duration[0];
     $("daylen").textContent=`${Math.floor(dl/3600)} val ${Math.round(dl%3600/60)} min`;
-    drawSeaWind(d); SEA.wx=d; drawSea();
+    drawSeaWind(d); SEA.wx=d; drawSea(); drawSchool();
     const D=d.daily;
     $("nowicon").innerHTML=icon(c.weather_code,c.is_day).replace('class="icon"','class="icon big"');
     $("week").innerHTML=D.time.map((t,i)=>{
@@ -508,12 +515,42 @@ function drawSeaWind(d){
   const el=$("swalert"); el.className="sw-alert "+cls; el.textContent=msg;
 }
 
+/* ---------- Wednesday: children go to Mausund skole by boat ----------
+   Limits (Edvardas, 2026-10): MET orange/red warning, gusts ≥ 20 m/s or feels-like ≤ −15 °C
+   between 06 and 10 on Wednesday, or the morning boat cancelled. */
+let ALERTS=[], SCHOOLBOAT=[];
+function nextWednesday(){ const t=osloToday(); const wd=t.getUTCDay(); return addD(t,(3-wd+7)%7); }
+function drawSchool(){
+  const d=SEA.wx; if(!d) return;
+  const wed=nextWednesday(), wk=keyOf(wed), todayK=keyOf(osloToday());
+  const H=d.hourly, hrs=H.time.map((t,i)=>i).filter(i=>{const dt=new Date(H.time[i]*1e3);return dayKey(dt)===wk&&+dt.toLocaleString("en-US",{timeZone:TZ,hour:"numeric",hour12:false})>=6&&+dt.toLocaleString("en-US",{timeZone:TZ,hour:"numeric",hour12:false})<=10;});
+  if(!hrs.length){ $("school").innerHTML=""; return; }
+  const gust=Math.max(...hrs.map(i=>H.wind_gusts_10m[i])), wind=Math.max(...hrs.map(i=>H.wind_speed_10m[i])), feels=Math.min(...hrs.map(i=>H.apparent_temperature[i]));
+  const w0=+new Date(wk+"T05:00:00Z"), w1=+new Date(wk+"T09:00:00Z");
+  const al=ALERTS.filter(f=>{const [a,b]=f.when?.interval||[];return a&&new Date(a)<=w1&&new Date(b)>=w0;}).map(f=>({lv:(f.properties.awareness_level||"").split(";")[1]?.trim(),ev:AL_EV[f.properties.event]||f.properties.event}));
+  const boatX=SCHOOLBOAT.filter(c=>dayKey(new Date(c.aimedDepartureTime))===wk&&c.cancellation);
+  const why=[];
+  al.filter(a=>a.lv==="orange"||a.lv==="red").forEach(a=>why.push(`MET ${AL_LV[a.lv]} įspėjimas: ${a.ev}`));
+  if(gust>=20) why.push(`gūsiai iki ${Math.round(gust)} m/s`);
+  if(feels<=-15) why.push(`jutiminė ${Math.round(feels)}°C`);
+  if(boatX.length) why.push(`rytinis keltas atšauktas`);
+  const yellow=al.filter(a=>a.lv==="yellow").map(a=>`geltonas: ${a.ev}`);
+  const isTomorrow=keyOf(addD(osloToday(),1))===wk, isToday=todayK===wk;
+  const when=isToday?"Šiandien":isTomorrow?"Rytoj":"Trečiadienį";
+  const cls=why.length?"bad":(yellow.length||gust>=15)?"warn":"";
+  $("school").className="school "+cls;
+  $("school").innerHTML=why.length
+    ?`<b>🏫 ${when} Mausund: verta svarstyti nevesti vaikų</b><span class="why">${why.join(" · ")} (06–10 val.)</span>`
+    :`<b>🏫 ${when} Mausund: pavojų nenumatyta</b><span class="why">vėjas iki ${Math.round(wind)}, gūsiai iki ${Math.round(gust)} m/s · jutiminė ${Math.round(feels)}°C${yellow.length?" · "+yellow.join(", "):""}</span>`;
+}
+
 /* ---------- official MET Norway warnings (farevarsel) for Sørburøy ---------- */
 const AL_EV={gale:"Kuling",wind:"Vėjas",stormSurge:"Audros banga",rain:"Liūtis",snow:"Sniegas",ice:"Apledėjimas",icing:"Apledėjimas",polarLow:"Poliarinė žemuma",lightning:"Žaibai",blowingSnow:"Pūga",avalanches:"Lavinos",flood:"Potvynis",landslide:"Nuošliaužos",forestFire:"Miškų gaisrų pavojus"};
 const AL_LV={yellow:"geltonas",orange:"oranžinis",red:"raudonas"};
 async function loadAlerts(){
   try{
     const j=await (await fetch(`https://api.met.no/weatherapi/metalerts/2.0/current.json?lat=${LAT}&lon=${LON}`)).json();
+    ALERTS=j.features||[]; drawSchool();
     $("alerts").innerHTML=(j.features||[]).map(f=>{const p=f.properties, lv=(p.awareness_level||"").split(";")[1]?.trim()||"yellow";
       const [a,b]=f.when?.interval||[]; const span=a?`${new Date(a).toLocaleString("lt-LT",{timeZone:TZ,weekday:"short",hour:"2-digit",minute:"2-digit"})} – ${new Date(b).toLocaleString("lt-LT",{timeZone:TZ,weekday:"short",hour:"2-digit",minute:"2-digit"})}`:"";
       return `<div class="alert ${lv}"><b>⚠ ${AL_EV[p.event]||p.event} · ${AL_LV[lv]||lv} lygis</b><span>${span}</span></div>`;}).join("");
@@ -591,6 +628,7 @@ const jk=(c,t)=>c.serviceJourney.id+"|"+dayKey(new Date(t));
 async function loadBoat(){
   try{
     const [atS,atD,bus]=await Promise.all([entur(STOP_SORBUROY),entur(STOP_DYROY),enturBus().catch(()=>[])]);
+    SCHOOLBOAT=atS.filter(c=>c.destinationDisplay.frontText.startsWith("Mausund")||c.destinationDisplay.frontText.startsWith("Sula")); drawSchool();
     const toDy=t=>t.startsWith("Dyrøy")||t.startsWith("Sør-Dyrøy");
     const busIn=bus.filter(c=>toDy(c.destinationDisplay.frontText)).map(c=>({line:c.serviceJourney.line.publicCode,t:new Date(c.expectedArrivalTime||c.aimedArrivalTime)}));
     const busOut=bus.filter(c=>!toDy(c.destinationDisplay.frontText)).map(c=>({line:c.serviceJourney.line.publicCode,t:new Date(c.expectedDepartureTime||c.aimedDepartureTime),to:c.destinationDisplay.frontText}));
@@ -636,9 +674,9 @@ async function loadBoat(){
       const st=boatState(e.c,e.aim,e.exp), moved=e.c.realtime&&Math.abs(e.exp-e.aim)>=120e3;
       let what, conn="";
       if(e.kind==="out"){ what=`Sørburøy → Dyrøy <span class="tm2">${fmtT(e.dyArr)}</span>`;
-        conn=e.toSis&&!e.toSis.flex?"":`<span class="cn need">🚕 užsakyti taksi</span>`; }
+        conn=e.toSis&&!e.toSis.flex?"":`<span class="cn need">🚕 taksi Dyrøy → Sistranda</span>`; }
       else { what=`Dyrøy → Sørburøy${e.arr?` <span class="tm2">${fmtT(e.arr)}</span>`:""}`;
-        conn=e.fromSis&&!e.fromSis.flex?"":`<span class="cn need">🚕 užsakyti taksi</span>`; }
+        conn=""; }
       html+=`<div class="brow ${st.cls}${e.exp<now?" past":""}"><span class="bt-t">${fmtT(moved?e.exp:e.aim)}${moved?`<s>${fmtT(e.aim)}</s>`:""}</span><span class="bt-d">${what}</span><span class="bt-c">${st.txt?`<span class="bt-s ${st.chip}">${st.txt}</span>`:""}${conn}</span></div>`;
     }
     $("boat").innerHTML=html||`<span style="color:var(--ink-2)">Artimiausių reisų nerasta.</span>`;
@@ -952,8 +990,6 @@ const CH=[
   {g:"Norvegija",n:"NRK Super",u:"https://nrk-live-no.akamaized.net/nrksuper/muxed.m3u8"},
   {g:"Norvegija",n:"Frikanalen",u:"https://frikanalen.no/stream/index.m3u8"},
   {g:"Rusų kalba",n:"Россия 1",u:"https://stream.smotrim.ru/hls2/russia_hd/playlist_6.m3u8"},
-  {g:"Rusų kalba",n:"Россия 24",u:"https://stream.smotrim.ru/hls2/russia24nl_smotrim/playlist_5.m3u8"},
-  {g:"Rusų kalba",n:"Россия К",u:"https://stream.smotrim.ru/hls2/russia_k/playlist_5.m3u8"},
   {g:"Rusų kalba",n:"Карусель",u:"https://stream.smotrim.ru/hls2/karusel/playlist_3.m3u8"},
   {g:"Rusų kalba",n:"Москва 24",u:"https://stream.smotrim.ru/hls2/moscow_24/playlist_3.m3u8"},
   {g:"Rusų kalba",n:"Звезда",u:"https://tvchannelstream1.tvzvezda.ru/cdn/tvzvezda/playlist.m3u8"},
@@ -982,7 +1018,7 @@ function play(i){
   stop(); playing=i; const c=CH[i]; $("tvmsg").textContent="Jungiamasi…";
   try{localStorage.setItem("ch",i);}catch(e){}
   banner(`${i+1} · ${c.n}`,c.g);
-  if(c.yt){ $("yt").hidden=false; $("yt").src=`https://www.youtube-nocookie.com/embed/${c.yt}?autoplay=1&controls=0&rel=0`; $("tvmsg").textContent=""; renderList(); showList(); return; }
+  if(c.yt){ $("yt").hidden=false; $("yt").src=`https://www.youtube-nocookie.com/embed/${c.yt}?autoplay=1&mute=0&controls=0&rel=0`; $("tvmsg").textContent=""; renderList(); showList(); return; }
   const v=$("vid"); v.onplaying=()=>{$("tvmsg").textContent="";};
   const fail=()=>{$("tvmsg").textContent=`${c.n} šiuo metu nerodo. Pasirink kitą kanalą.`;};
   if(window.Hls&&Hls.isSupported()){
@@ -1004,6 +1040,7 @@ const KEY={up:["ArrowUp"],down:["ArrowDown"],ok:["Enter"," "],back:["Backspace",
 const is=(e,k)=>KEY[k].includes(e.key)||(k==="back"&&[461,10009,8,27].includes(e.keyCode))||(k==="chUp"&&e.keyCode===427)||(k==="chDown"&&e.keyCode===428);
 addEventListener("keydown",e=>{
   if(!tvOn && seaOn){ if(is(e,"back")||is(e,"left")||is(e,"right")){e.preventDefault();closeSea();} else if(is(e,"ok")){e.preventDefault();closeSea();openTV();} return; }
+  if(!tvOn && !seaOn && (is(e,"up")||is(e,"down"))){ e.preventDefault(); $("boat").scrollBy({top:(is(e,"down")?1:-1)*$("boat").clientHeight*.6,behavior:"smooth"}); return; }
   if(!tvOn && is(e,"right")){ e.preventDefault(); openSea(); return; }
   if(!tvOn){ if(is(e,"ok")||is(e,"chUp")||is(e,"chDown")||/^[0-9]$/.test(e.key)){e.preventDefault();openTV();} return; }
   const listOpen=!$("chlist").classList.contains("hide");
