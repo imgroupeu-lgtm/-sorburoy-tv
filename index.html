@@ -184,7 +184,7 @@ table.wk{width:100%;border-collapse:separate;border-spacing:0 calc(.3*var(--u));
 #tv{position:fixed;inset:0;z-index:5;background:#000;display:flex}
 #tv video,#tv iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
 .chlist{position:absolute;left:0;top:0;bottom:0;width:calc(27*var(--u));padding:calc(2*var(--u)) calc(1.4*var(--u));display:flex;flex-direction:column;gap:calc(.3*var(--u));
-  background:linear-gradient(90deg,rgba(4,14,22,.94),rgba(4,14,22,.82) 80%,rgba(4,14,22,0));overflow:hidden;transition:transform .35s ease,opacity .35s ease}
+  background:linear-gradient(90deg,rgba(4,14,22,.94),rgba(4,14,22,.82) 80%,rgba(4,14,22,0));overflow-y:auto;scrollbar-width:none;transition:transform .35s ease,opacity .35s ease}
 .chlist.hide{transform:translateX(-100%);opacity:0}
 .chgroup{font-size:calc(.85*var(--u));font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--kelp);margin-top:calc(.7*var(--u))}
 .ch{display:grid;grid-template-columns:calc(2.4*var(--u)) 1fr auto;gap:calc(.6*var(--u));align-items:baseline;font-size:calc(1.35*var(--u));padding:calc(.38*var(--u)) calc(.8*var(--u));border-radius:calc(.5*var(--u));color:var(--ink-2)}
@@ -389,7 +389,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261025155748";
+const BUILD="20261025160739";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -991,16 +991,31 @@ const CH=[
   {g:"Norvegija",n:"NRK3",u:"https://nrk-live-no.akamaized.net/nrk3/muxed.m3u8"},
   {g:"Norvegija",n:"NRK Super",u:"https://nrk-live-no.akamaized.net/nrksuper/muxed.m3u8"},
   {g:"Norvegija",n:"Frikanalen",u:"https://frikanalen.no/stream/index.m3u8"},
-  {g:"Rusų kalba",n:"Россия 1",u:"https://stream.smotrim.ru/hls2/russia_hd/playlist_6.m3u8"},
-  {g:"Rusų kalba",n:"Карусель",u:"https://stream.smotrim.ru/hls2/karusel/playlist_3.m3u8"},
-  {g:"Rusų kalba",n:"Москва 24",u:"https://stream.smotrim.ru/hls2/moscow_24/playlist_3.m3u8"},
-  {g:"Rusų kalba",n:"Звезда",u:"https://tvchannelstream1.tvzvezda.ru/cdn/tvzvezda/playlist.m3u8"},
-  {g:"Rusų kalba",n:"Спас",u:"https://tvspas.mediacdn.ru/cdn/spas/playlist.m3u8"},
-  {g:"Rusų kalba",n:"DW (rusų k.)",u:"https://dwamdstream110.akamaized.net/hls/live/2017971/dwstream110/master.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"Россия 1",u:"https://stream.smotrim.ru/hls2/russia_hd/playlist_6.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"Звезда",u:"https://tvchannelstream1.tvzvezda.ru/cdn/tvzvezda/playlist.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"Санкт-Петербург",u:"https://stream.smotrim.ru/hls2/ext_spbtv/playlist_5.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"Москва 24",u:"https://stream.smotrim.ru/hls2/moscow_24/playlist_3.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"Москва. Доверие",u:"https://stream.smotrim.ru/hls2/doverie/playlist_3.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"Беларусь 24",u:"https://ngtrk.dc.beltelecom.by/ngtrk/smil:belarus24.smil/playlist.m3u8"},
+  {g:"Rusų k. · naujienos",n:"Дождь",u:"https://wl.tvrain.tv/transcode/ngrp:ses_all/playlist.m3u8"},
+  {g:"Rusų k. · naujienos",n:"Настоящее Время",u:"https://rfe-ingest.akamaized.net/hls/live/2033043/tvmc05/master.m3u8"},
+  {g:"Rusų k. · naujienos",n:"RTVi",u:"https://amg17233-amg17233c1-wisptv-us-6409.playouts.now.amagi.tv/playlist.m3u8"},
+  {g:"Rusų k. · naujienos",n:"Euronews (рус.)",u:"https://cdn-euronews.akamaized.net/live/eds/euronews-ru/25071/index.m3u8"},
+  {g:"Rusų k. · naujienos",n:"DW (рус.)",u:"https://dwamdstream110.akamaized.net/hls/live/2017971/dwstream110/master.m3u8"},
+  {g:"Rusų k. · naujienos",n:"360° Новости",u:"https://live-vgtrksmotrim.cdnvideo.ru/vgtrksmotrim/smotrim-live-03-srt.smil/playlist.m3u8"},
+  {g:"Rusų k. · naujienos",n:"Первый информационный",u:"https://ngtrk.dc.beltelecom.by/ngtrk/smil:informacionnyy.smil/playlist.m3u8"},
+  {g:"Rusų k. · kinas ir serialai",n:"Честный детектив",u:"https://live-vgtrksmotrim.cdnvideo.ru/vgtrksmotrim/smotrim-live-01.smil/playlist.m3u8"},
+  {g:"Rusų k. · kinas ir serialai",n:"100% Классика",u:"https://stream.smotrim.ru/hls/fasttv03/playlist_3.m3u8"},
+  {g:"Rusų k. · kinas ir serialai",n:"100% Любовь",u:"https://stream.smotrim.ru/hls/fasttv01/playlist_2.m3u8"},
+  {g:"Rusų k. · kinas ir serialai",n:"100% Мужское",u:"https://stream.smotrim.ru/hls/fasttv02/playlist_3.m3u8"},
+  {g:"Rusų k. · kinas ir serialai",n:"100% Факты",u:"https://stream.smotrim.ru/hls/fasttv06/playlist_3.m3u8"},
+  {g:"Rusų k. · vaikams",n:"Карусель",u:"https://stream.smotrim.ru/hls2/karusel/playlist_3.m3u8"},
+  {g:"Rusų k. · vaikams",n:"100% Детское",u:"https://stream.smotrim.ru/hls/fasttv05/playlist_3.m3u8"},
+  {g:"Rusų k. · laisvalaikis",n:"Спортивный",u:"https://live-3.otcnet.ru/sportivny/index.m3u8"},
+  {g:"Rusų k. · laisvalaikis",n:"Муз Союз",u:"https://hls-tvsoyuz.cdnvideo.ru/tvsoyuz2/muzsoyuz.6fw0-58xp-acts-esy0/playlist.m3u8"},
+  {g:"Rusų k. · laisvalaikis",n:"Спас",u:"https://tvspas.mediacdn.ru/cdn/spas/playlist.m3u8"},
   {g:"YouTube · lietuviški",n:"LRT Lituanica",yt:"m67gYVnA100"},
   {g:"YouTube · lietuviški",n:"LRT Radijas",yt:"izc0E-37OmY"},
-  {g:"YouTube · rusų k.",n:"Настоящее Время",yt:"t9Ilev-uk4w"},
-  {g:"YouTube · rusų k.",n:"Euronews по-русски",yt:"lwYzwdBiaho"},
   {g:"YouTube · rusų k.",n:"FREEДОМ",yt:"O0zGN7A7dMw"},
   {g:"YouTube · rusų k.",n:"Радио Свобода",yt:"_1RM28GoU3E"}
 ];
