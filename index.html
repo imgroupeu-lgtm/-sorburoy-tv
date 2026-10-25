@@ -236,6 +236,10 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 .brow .tm2{font-family:var(--display);font-weight:600}
 .brow .bt-c{display:flex;gap:calc(.3*var(--u));white-space:nowrap}
 .brow.past{opacity:.4}
+.avvik{font-size:calc(.9*var(--u));line-height:1.35;background:rgba(255,107,107,.2);border-left:calc(.25*var(--u)) solid #ff6b6b;border-radius:calc(.3*var(--u));padding:calc(.3*var(--u)) calc(.5*var(--u))}
+.avvik:empty{display:none}
+.avvik b{display:block}
+.brow .bt-sit{grid-column:1 / -1;font-size:calc(.85*var(--u));color:#ff9a8a}
 .brow.st-ok{box-shadow:inset calc(.25*var(--u)) 0 0 var(--kelp)} .brow.st-late{box-shadow:inset calc(.25*var(--u)) 0 0 var(--lamp)} .brow.st-cx{box-shadow:inset calc(.25*var(--u)) 0 0 #ff6b6b}
 .cn{display:inline-block;font-size:calc(.85*var(--u));font-weight:600;border-radius:calc(.3*var(--u));padding:0 calc(.35*var(--u))}
 .cn.bus{background:rgba(127,220,198,.18);color:var(--kelp)}
@@ -306,7 +310,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
       <div class="hols" id="hols"></div>
     </div>
     <div class="school" id="school"></div>
-    <div class="boat"><div class="boat-head"><span class="label">Keltas 820 · Sørburøy ⇄ Dyrøy</span><span class="label" id="boatupd"></span></div><div class="boatlist" id="boat"></div></div>
+    <div class="boat"><div class="boat-head"><span class="label">Keltas 820 · Sørburøy ⇄ Dyrøy</span><span class="label" id="boatupd"></span></div><div class="avvik" id="avvik"></div><div class="boatlist" id="boat"></div></div>
   </section>
 
   <section class="wx panel">
@@ -389,7 +393,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261025160739";
+const BUILD="20261025201249";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -588,7 +592,7 @@ async function loadObs(){
 /* ---------- ferry 820 via Entur (same data as the AtB app), 5 days ---------- */
 const STOP_SORBUROY="NSR:StopPlace:42925", STOP_DYROY="NSR:StopPlace:60419", STOP_DYROY_BUS="NSR:StopPlace:43525";
 async function entur(stop){
-  const q=`{stopPlace(id:"${stop}"){estimatedCalls(numberOfDepartures:250,timeRange:432000,arrivalDeparture:both,whiteListed:{lines:["ATB:Line:2_820"]}){realtime cancellation aimedArrivalTime expectedArrivalTime aimedDepartureTime expectedDepartureTime destinationDisplay{frontText} serviceJourney{id line{publicCode}}}}}`;
+  const q=`{stopPlace(id:"${stop}"){estimatedCalls(numberOfDepartures:250,timeRange:432000,arrivalDeparture:both,includeCancelledTrips:true,whiteListed:{lines:["ATB:Line:2_820"]}){realtime cancellation forBoarding forAlighting situations{summary{value} description{value}} aimedArrivalTime expectedArrivalTime aimedDepartureTime expectedDepartureTime destinationDisplay{frontText} serviceJourney{id line{publicCode}}}}}`;
   const r=await fetch("https://api.entur.io/journey-planner/v3/graphql",{method:"POST",headers:{"Content-Type":"application/json","ET-Client-Name":"imgroupeu-sorburoy-tv"},body:JSON.stringify({query:q})});
   const d=await r.json(); return (d.data?.stopPlace?.estimatedCalls||[]).filter(c=>c.serviceJourney.line.publicCode==="820");
 }
@@ -618,8 +622,9 @@ function taxiSlot(arrDyroy){ if(!arrDyroy) return false;
   const wd=new Date(arrDyroy.toLocaleString("en-US",{timeZone:TZ})).getDay(), hm=fmtT(arrDyroy);
   return (wd===3||wd===5) && hm>="10:15" && hm<="10:45"; }
 const placeName=t=>t.replace(/ (hurtigbåt)?kai$/,"");
-function boatState(c,aim,exp){
+function boatState(c,aim,exp,need){
   if(c.cancellation) return {cls:"st-cx",chip:"cx",txt:"atšauktas"};
+  if(need==="board"&&c.forBoarding===false || need==="alight"&&c.forAlighting===false) return {cls:"st-cx",chip:"cx",txt:"nestoja Sørburøy"};
   if(!c.realtime) return {cls:"",chip:"plan",txt:""};
   const late=Math.round((exp-aim)/60e3);
   return late>=2?{cls:"st-late",chip:"late",txt:`+${late} min`}:{cls:"st-ok",chip:"ok",txt:"laiku"};
@@ -652,7 +657,7 @@ async function loadBoat(){
       // getting to Dyrøy: last bus arriving 5–90 min before the boat leaves
       const feeder=busIn.filter(b=>dep-b.t>=5*60e3&&dep-b.t<=90*60e3).sort((a,b)=>b.t-a.t)[0]||null;
       ev.push({kind:"in",aim:new Date(c.aimedDepartureTime),exp:dep,c,
-        arr:a&&a.expectedArrivalTime?new Date(a.expectedArrivalTime):null,feeder});});
+        arr:a&&a.expectedArrivalTime?new Date(a.expectedArrivalTime):null,arrCall:a||null,feeder});});
     ev.sort((x,y)=>x.aim-y.aim);
     const now=new Date(), today=keyOf(osloToday());
     const mine=ev.filter(e=>e.exp>now-30*60e3 && (e.kind==="in" || (e.kind==="out" && e.dyArr)));
@@ -672,13 +677,16 @@ async function loadBoat(){
         const dd=new Date(dk+"T12:00:00Z"), k=Math.round((dd-new Date(today+"T12:00:00Z"))/86400e3);
         const nm=k===0?"Šiandien":k===1?"Rytoj":dd.toLocaleDateString("lt-LT",{timeZone:"UTC",weekday:"long"});
         html+=`<div class="bday">${nm} <span>${dd.toLocaleDateString("lt-LT",{timeZone:"UTC",day:"numeric",month:"numeric"})}</span></div>`; }
-      const st=boatState(e.c,e.aim,e.exp), moved=e.c.realtime&&Math.abs(e.exp-e.aim)>=120e3;
+      let st=boatState(e.c,e.aim,e.exp,e.kind==="out"?"board":null);
+      if(e.kind==="in"&&e.arrCall){const s2=boatState(e.arrCall,e.aim,e.exp,"alight"); if(s2.chip==="cx") st=s2;}
+      const moved=e.c.realtime&&Math.abs(e.exp-e.aim)>=120e3;
+      const sit=[...(e.c.situations||[]),...(e.arrCall?.situations||[])].map(x=>x.summary?.[0]?.value).filter(Boolean);
       let what, conn="";
       if(e.kind==="out"){ what=`Sørburøy → Dyrøy <span class="tm2">${fmtT(e.dyArr)}</span>`;
         conn=e.toSis&&!e.toSis.flex?"":`<span class="cn need">🚕 taksi Dyrøy → Sistranda</span>`; }
       else { what=`Dyrøy → Sørburøy${e.arr?` <span class="tm2">${fmtT(e.arr)}</span>`:""}`;
         conn=""; }
-      html+=`<div class="brow ${st.cls}${e.exp<now?" past":""}"><span class="bt-t">${fmtT(moved?e.exp:e.aim)}${moved?`<s>${fmtT(e.aim)}</s>`:""}</span><span class="bt-d">${what}</span><span class="bt-c">${st.txt?`<span class="bt-s ${st.chip}">${st.txt}</span>`:""}${conn}</span></div>`;
+      html+=`<div class="brow ${st.cls}${e.exp<now?" past":""}"><span class="bt-t">${fmtT(moved?e.exp:e.aim)}${moved?`<s>${fmtT(e.aim)}</s>`:""}</span><span class="bt-d">${what}</span><span class="bt-c">${st.txt?`<span class="bt-s ${st.chip}">${st.txt}</span>`:""}${conn}</span>${sit.length?`<span class="bt-sit">⚠ ${[...new Set(sit)].join(" · ")}</span>`:""}</div>`;
     }
     $("boat").innerHTML=html||`<span style="color:var(--ink-2)">Artimiausių reisų nerasta.</span>`;
     $("boatupd").textContent="atnaujinta "+fmtT(new Date());
@@ -1079,6 +1087,10 @@ setInterval(loadWaves,30*60e3);
 loadObs(); setInterval(loadObs,5*60e3);
 loadAlerts(); setInterval(loadAlerts,15*60e3);
 loadBoat(); setInterval(loadBoat,60e3);
+async function loadAvvik(){try{const j=await (await fetch("avvik.json?t="+Date.now())).json();
+  const fresh=(j.items||[]).filter(x=>Date.now()-new Date(x.published||j.updated)<36*3600e3);
+  $("avvik").innerHTML=fresh.map(x=>`<b>⚠ AtB: ${x.title}</b>${x.text}`).join("");}catch(e){$("avvik").innerHTML="";}}
+loadAvvik(); setInterval(loadAvvik,5*60e3);
 // keep a phone/tablet screen awake while the page is open
 let wl=null;async function wake(){try{wl=await navigator.wakeLock?.request("screen");}catch(e){}}
 wake();document.addEventListener("visibilitychange",()=>{if(!document.hidden)wake();});addEventListener("click",wake,{once:true});
