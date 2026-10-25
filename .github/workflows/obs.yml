@@ -17,9 +17,11 @@ jobs:
         env:
           FROST_CLIENT_ID: ${{ secrets.FROST_CLIENT_ID }}
         run: python3 scripts/fetch_obs.py
+      - name: Wednesday school check
+        run: python3 scripts/school_check.py || true
       - name: Commit obs.json if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add obs.json
+          git add obs.json school.json
           git diff --cached --quiet || (git commit -m "Atnaujinti stočių matavimai" && git push)
