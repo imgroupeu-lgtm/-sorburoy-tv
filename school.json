@@ -1,0 +1,18 @@
+{
+ "updated": "2026-10-25T15:57+01:00",
+ "date": "2026-10-28",
+ "reasons": [],
+ "notes": [],
+ "wind": 14,
+ "gust": 19,
+ "feels": 2,
+ "alerts": [],
+ "boats": [
+  {
+   "time": "09:20",
+   "to": "Dyrøy kai",
+   "cancelled": false
+  }
+ ],
+ "verdict": "warn"
+}
