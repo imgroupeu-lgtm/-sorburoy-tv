@@ -332,6 +332,12 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 .wk .dn{font-size:calc(1.1*var(--u))}
 .wk .icon{width:calc(2.2*var(--u));height:calc(2.2*var(--u))}
 .wk .wchip{font-size:calc(1.25*var(--u))}
+.ferry-col .brow{grid-template-columns:calc(4*var(--u)) 1fr}
+.ferry-col .brow .bt-c{grid-column:2;white-space:normal;flex-wrap:wrap}
+.ferry-col .brow .bt-c:empty{display:none}
+.ferry-col .boat-head{flex-wrap:wrap;gap:0 calc(.6*var(--u))}
+.sea-col .tidehead{flex-direction:column;align-items:flex-start;gap:calc(.1*var(--u))}
+.sea-col .status{font-size:calc(1.05*var(--u))}
 @media (orientation:portrait){
   .screen{grid-template-columns:1fr!important}
   .top{grid-template-columns:1fr 1fr}
@@ -449,7 +455,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261026155701";
+const BUILD="20261026155931";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
