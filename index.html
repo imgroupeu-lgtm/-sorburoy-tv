@@ -339,7 +339,10 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 .sea-col .tidehead{flex-direction:column;align-items:flex-start;gap:calc(.1*var(--u))}
 .sea-col .status{font-size:calc(1.05*var(--u))}
 @media (orientation:portrait){
-  .screen{grid-template-columns:1fr!important}
+  .screen{grid-template-columns:1fr!important;grid-template-rows:auto!important;grid-auto-rows:auto!important}
+  .screen>.panel{overflow:visible;height:auto}
+  .sea-col #swchart{flex:none;height:calc(8*var(--u))}
+  .ferry-col .boatlist{flex:none;overflow:visible}
   .top{grid-template-columns:1fr 1fr}
   .t-notes{grid-column:1 / -1}
 }
@@ -455,7 +458,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261026155931";
+const BUILD="20261026160114";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
