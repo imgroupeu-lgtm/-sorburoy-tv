@@ -1,12 +1,12 @@
 {
- "updated": "2026-10-26T06:04+01:00",
+ "updated": "2026-10-26T12:02+01:00",
  "date": "2026-10-28",
  "reasons": [
-  "gūsiai iki 22 m/s"
+  "gūsiai iki 20 m/s"
  ],
  "notes": [],
- "wind": 16,
- "gust": 22,
+ "wind": 15,
+ "gust": 20,
  "feels": 1,
  "alerts": [],
  "boats": [
