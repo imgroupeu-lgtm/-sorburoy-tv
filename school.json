@@ -1,11 +1,13 @@
 {
- "updated": "2026-10-26T01:24+01:00",
+ "updated": "2026-10-26T06:04+01:00",
  "date": "2026-10-28",
- "reasons": [],
+ "reasons": [
+  "gūsiai iki 22 m/s"
+ ],
  "notes": [],
- "wind": 14,
- "gust": 19,
- "feels": 2,
+ "wind": 16,
+ "gust": 22,
+ "feels": 1,
  "alerts": [],
  "boats": [
   {
@@ -14,5 +16,5 @@
    "cancelled": false
   }
  ],
- "verdict": "warn"
+ "verdict": "bad"
 }
