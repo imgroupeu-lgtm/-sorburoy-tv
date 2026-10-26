@@ -239,6 +239,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 .avvik{font-size:calc(.9*var(--u));line-height:1.35;background:rgba(255,107,107,.2);border-left:calc(.25*var(--u)) solid #ff6b6b;border-radius:calc(.3*var(--u));padding:calc(.3*var(--u)) calc(.5*var(--u))}
 .avvik:empty{display:none}
 .avvik b{display:block}
+.avvik>div+div{margin-top:calc(.3*var(--u));padding-top:calc(.3*var(--u));border-top:1px solid rgba(255,255,255,.12)}
 .brow .bt-sit{grid-column:1 / -1;font-size:calc(.85*var(--u));color:#ff9a8a}
 .brow.st-ok{box-shadow:inset calc(.25*var(--u)) 0 0 var(--kelp)} .brow.st-late{box-shadow:inset calc(.25*var(--u)) 0 0 var(--lamp)} .brow.st-cx{box-shadow:inset calc(.25*var(--u)) 0 0 #ff6b6b}
 .cn{display:inline-block;font-size:calc(.85*var(--u));font-weight:600;border-radius:calc(.3*var(--u));padding:0 calc(.35*var(--u))}
@@ -293,71 +294,126 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
   body{overflow-y:auto}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== Layout v3: top strip + three question columns (Jūra · Keltas · Orai) ===== */
+.screen{grid-template-columns:1.02fr .9fr 1.08fr!important;grid-template-rows:auto minmax(0,1fr)!important}
+.top{grid-column:1 / -1;display:grid;grid-template-columns:auto auto auto 1fr;gap:calc(2*var(--u));align-items:center;padding:calc(.7*var(--u)) calc(1.4*var(--u))}
+.top .time{font-size:calc(5.4*var(--u))}
+.top .time .sec{font-size:calc(1.8*var(--u))}
+.t-clock{display:flex;flex-direction:column;gap:calc(.3*var(--u))}
+.t-day{display:flex;flex-direction:column;gap:calc(.2*var(--u))}
+.t-day .date{font-size:calc(1.5*var(--u))}
+.top .cal{gap:0}
+.top .grid{grid-template-columns:calc(1.8*var(--u)) repeat(7,calc(2.3*var(--u)))}
+.top .grid .d{font-size:calc(1.05*var(--u));padding:0}
+.t-notes{display:flex;flex-direction:column;gap:calc(.3*var(--u));min-width:0;align-self:stretch;justify-content:center}
+.t-notes .school,.t-notes .alert{font-size:calc(.95*var(--u))}
+.sea-col{display:flex;flex-direction:column;gap:calc(.6*var(--u))}
+.sea-col .seawind{flex:1;display:flex;flex-direction:column;min-height:0}
+.sea-col #swchart{flex:1;height:auto;min-height:calc(6*var(--u))}
+.sea-col .tide{display:flex;flex-direction:column;gap:calc(.3*var(--u));border-top:1px solid var(--glass-edge);padding-top:calc(.5*var(--u))}
+.sea-col .tide svg{height:calc(5*var(--u))}
+.sea-col .tidelist{flex-direction:row;flex-wrap:wrap;gap:calc(.3*var(--u)) calc(1.2*var(--u))}
+.sea-col .tl{grid-template-columns:auto auto;gap:calc(.4*var(--u));font-size:calc(1*var(--u))}
+.sea-col .tl .c{display:none}
+.sea-col .tl .v{font-size:calc(1.35*var(--u))}
+.ferry-col{display:flex;flex-direction:column;gap:calc(.4*var(--u))}
+.ferry-col .boatlist{flex:1}
+.wx{display:flex!important;flex-direction:column;gap:calc(.6*var(--u))!important}
+.wx .temp{font-size:calc(4.6*var(--u))}
+.wx .icon.big{width:calc(4.4*var(--u));height:calc(4.4*var(--u))}
+.wx .wind{padding:calc(.4*var(--u)) calc(.9*var(--u))}
+.wx .compass{width:calc(3.2*var(--u));height:calc(3.2*var(--u))}
+.wx .wind .speed{font-size:calc(2.4*var(--u))}
+.wx-week{flex:1;min-height:0}
+.wk td{padding:calc(.15*var(--u)) calc(.35*var(--u))}
+.wk .tmax{font-size:calc(1.8*var(--u))}
+.wk .tmin{font-size:calc(1.35*var(--u))}
+.wk .dn{font-size:calc(1.1*var(--u))}
+.wk .icon{width:calc(2.2*var(--u));height:calc(2.2*var(--u))}
+.wk .wchip{font-size:calc(1.25*var(--u))}
+@media (orientation:portrait){
+  .screen{grid-template-columns:1fr!important}
+  .top{grid-template-columns:1fr 1fr}
+  .t-notes{grid-column:1 / -1}
+}
 </style>
 </head>
 <body>
 <canvas id="sky"></canvas>
 <main class="screen">
-  <section class="clock panel">
-    <div class="label">Sørburøya · Froan</div>
-    <div class="time" id="time">--:--</div>
-    <div class="minbar"><i id="minbar"></i></div>
-    <div class="date" id="date"></div>
-    <div class="sunline">☀ <b id="sunrise">--:--</b> – <b id="sunset">--:--</b> · <span id="daylen">--</span> · <span id="phase"></span></div>
-    <div class="cal">
-      <div class="cal-head"><span class="cal-month" id="calmonth"></span><span class="label" id="calweek"></span></div>
-      <div class="grid" id="calgrid"></div>
-      <div class="hols" id="hols"></div>
+  <!-- 1. Top strip: what matters today -->
+  <section class="top panel">
+    <div class="t-clock">
+      <div class="time" id="time">--:--</div>
+      <div class="minbar"><i id="minbar"></i></div>
     </div>
-    <div class="school" id="school"></div>
-    <div class="boat"><div class="boat-head"><span class="label">Keltas 820 · Sørburøy ⇄ Dyrøy</span><span class="label" id="boatupd"></span></div><div class="avvik" id="avvik"></div><div class="boatlist" id="boat"></div></div>
+    <div class="t-day">
+      <div class="date" id="date"></div>
+      <div class="sunline">☀ <b id="sunrise">--:--</b> – <b id="sunset">--:--</b> · <span id="daylen">--</span> · <span id="phase"></span></div>
+      <div class="label">Sørburøya · Froan · <span id="calweek"></span></div>
+    </div>
+    <div class="cal">
+      <div class="grid" id="calgrid"></div>
+    </div>
+    <div class="t-notes">
+      <div class="alerts" id="alerts"></div>
+      <div class="hols" id="hols"></div>
+      <div class="school" id="school"></div>
+    </div>
+    <span class="cal-month" id="calmonth" hidden></span>
   </section>
 
+  <!-- 2. Sea: can I go out? -->
+  <section class="sea-col panel">
+    <div class="seawind">
+      <div class="sw-head"><span class="label">Į jūrą · vėjas 4 val. kas 15 min</span><span class="sw-legend"><i class="lg-s"></i>vidutinis <i class="lg-g"></i>gūsiai</span></div>
+      <div class="sw-alert" id="swalert"></div>
+      <svg id="swchart" viewBox="0 0 1000 300" preserveAspectRatio="none"></svg>
+      <div class="sw-axis" id="swaxis"></div>
+    </div>
+    <div class="sw-waves" id="swwaves"></div>
+    <div class="sw-waves" id="swobs"></div>
+    <div class="tide">
+      <div class="tidehead"><span class="label">Potvynis · cm nuo jūrlapio nulio</span><span class="status" id="tstatus"></span></div>
+      <svg id="tidechart" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg>
+      <div class="tidelist" id="tidelist"></div>
+    </div>
+  </section>
+
+  <!-- 3. Ferry: is the boat running? -->
+  <section class="ferry-col panel boat">
+    <div class="boat-head"><span class="label">Keltas 820 · Sørburøy ⇄ Dyrøy</span><span class="label" id="boatupd"></span></div>
+    <div class="avvik" id="avvik"></div>
+    <div class="boatlist" id="boat"></div>
+  </section>
+
+  <!-- 4. Weather -->
   <section class="wx panel">
-    <div class="wx-now">
-      <div class="now">
-        <div class="nowicon" id="nowicon"></div>
-        <div class="temp num" id="temp">--<sup>°C</sup></div>
-        <div>
-          <div class="cond" id="cond">Kraunama…</div>
-          <div class="feels" id="feels"></div>
-        </div>
+    <div class="now">
+      <div class="nowicon" id="nowicon"></div>
+      <div class="temp num" id="temp">--<sup>°C</sup></div>
+      <div>
+        <div class="cond" id="cond">Kraunama…</div>
+        <div class="feels" id="feels"></div>
       </div>
-      <div class="alerts" id="alerts"></div>
-      <div class="wind">
-        <svg class="compass" viewBox="-50 -50 100 100" aria-hidden="true">
-          <circle r="46" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="3"/>
-          <circle r="46" fill="none" stroke="var(--lamp)" stroke-width="3" stroke-dasharray="4 10" opacity=".35"/>
-          <text y="-31" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)" font-family="Source Sans 3,Arial">Š</text>
-          <g id="arrow"><g id="arrowWob"><path d="M0,-30 L11,14 L0,6 L-11,14 Z" fill="var(--lamp)"/></g></g>
-        </svg>
-        <div>
-          <div class="speed num" id="wspeed">--<small>m/s</small></div>
-          <div class="beau" id="beau"></div>
-        </div>
-        <div class="detail" id="wdetail"></div>
+    </div>
+    <div class="wind">
+      <svg class="compass" viewBox="-50 -50 100 100" aria-hidden="true">
+        <circle r="46" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="3"/>
+        <circle r="46" fill="none" stroke="var(--lamp)" stroke-width="3" stroke-dasharray="4 10" opacity=".35"/>
+        <text y="-31" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)" font-family="Source Sans 3,Arial">Š</text>
+        <g id="arrow"><g id="arrowWob"><path d="M0,-30 L11,14 L0,6 L-11,14 Z" fill="var(--lamp)"/></g></g>
+      </svg>
+      <div>
+        <div class="speed num" id="wspeed">--<small>m/s</small></div>
+        <div class="beau" id="beau"></div>
       </div>
-      <div class="seawind">
-        <div class="sw-head"><span class="label">Vėjas jūroje · 4 val. kas 15 min</span><span class="sw-legend"><i class="lg-s"></i>vidutinis <i class="lg-g"></i>gūsiai</span></div>
-        <div class="sw-alert" id="swalert"></div>
-        <svg id="swchart" viewBox="0 0 1000 300" preserveAspectRatio="none"></svg>
-        <div class="sw-axis" id="swaxis"></div>
-        <div class="sw-waves" id="swwaves"></div>
-        <div class="sw-waves" id="swobs"></div>
-      </div>
+      <div class="detail" id="wdetail"></div>
     </div>
     <div class="wx-week">
-      <div class="label">7 dienų prognozė · Sørburøya</div>
-      <table class="wk"><thead><tr><th>Diena</th><th></th><th>Dieną</th><th>Naktį</th><th>Vėjas · gūsiai m/s</th><th>Krituliai</th></tr></thead><tbody id="week"></tbody></table>
+      <table class="wk"><thead><tr><th>7 dienos</th><th></th><th>Dieną</th><th>Naktį</th><th>Vėjas · gūs.</th><th>Krit.</th></tr></thead><tbody id="week"></tbody></table>
     </div>
-  </section>
-
-  <section class="tide panel">
-    <div>
-      <div class="tidehead"><span class="label">Potvynis ir atoslūgis · cm nuo jūrlapio nulio</span><span class="status" id="tstatus"></span></div>
-      <svg id="tidechart" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg>
-    </div>
-    <div class="tidelist" id="tidelist"></div>
   </section>
 </main>
 <div class="foot">Orai: Open-Meteo (MET Norway modelis) · Potvyniai: Kartverket, CC BY 4.0 · <span id="upd"></span></div>
@@ -393,7 +449,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261025201249";
+const BUILD="20261026155701";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -678,6 +734,7 @@ async function loadBoat(){
         const nm=k===0?"Šiandien":k===1?"Rytoj":dd.toLocaleDateString("lt-LT",{timeZone:"UTC",weekday:"long"});
         html+=`<div class="bday">${nm} <span>${dd.toLocaleDateString("lt-LT",{timeZone:"UTC",day:"numeric",month:"numeric"})}</span></div>`; }
       let st=boatState(e.c,e.aim,e.exp,e.kind==="out"?"board":null);
+      if(TG_CX.has(tgKey(e.kind==="out"?"Sørburøy":"Dyrøy",e.aim.toISOString()))) st={cls:"st-cx",chip:"cx",txt:"atšauktas (Torghatten)"};
       if(e.kind==="in"&&e.arrCall){const s2=boatState(e.arrCall,e.aim,e.exp,"alight"); if(s2.chip==="cx") st=s2;}
       const moved=e.c.realtime&&Math.abs(e.exp-e.aim)>=120e3;
       const sit=[...(e.c.situations||[]),...(e.arrCall?.situations||[])].map(x=>x.summary?.[0]?.value).filter(Boolean);
@@ -1087,9 +1144,21 @@ setInterval(loadWaves,30*60e3);
 loadObs(); setInterval(loadObs,5*60e3);
 loadAlerts(); setInterval(loadAlerts,15*60e3);
 loadBoat(); setInterval(loadBoat,60e3);
-async function loadAvvik(){try{const j=await (await fetch("avvik.json?t="+Date.now())).json();
-  const fresh=(j.items||[]).filter(x=>Date.now()-new Date(x.published||j.updated)<36*3600e3);
-  $("avvik").innerHTML=fresh.map(x=>`<b>⚠ AtB: ${x.title}</b>${x.text}`).join("");}catch(e){$("avvik").innerHTML="";}}
+let TG_CX=new Set();
+const tgKey=(quay,iso)=>quay.replace(/ (hurtigbåt)?kai$/i,"").toLowerCase()+"|"+new Date(iso).toISOString().slice(0,16);
+async function loadAvvik(){
+  let html="";
+  try{const j=await (await fetch("avvik.json?t="+Date.now())).json();
+    (j.items||[]).filter(x=>Date.now()-new Date(x.published||j.updated)<36*3600e3).forEach(x=>html+=`<div><b>⚠ AtB: ${x.title}</b>${x.text}</div>`);}catch(e){}
+  try{const t=await (await fetch("torghatten.json?t="+Date.now())).json(); const cx=new Set();
+    (t.items||[]).forEach(x=>{
+      const gone=(x.departures||[]).filter(d=>d.cancelled&&new Date(d.dep)>Date.now()-6*3600e3);
+      gone.forEach(d=>cx.add(tgKey(d.from||"",d.dep)));
+      if(gone.length||Date.now()-new Date(x.updated)<36*3600e3)
+        html+=`<div><b>⚠ Torghatten · ${x.line}</b>${x.text}${gone.length?`<br>Atšaukta: ${gone.map(d=>`${fmtT(new Date(d.dep))} ${d.from.replace(/ (hurtigbåt)?kai$/i,"")} → ${d.to.replace(/ (hurtigbåt)?kai$/i,"")}`).join(", ")}`:""}</div>`;});
+    const changed=[...cx].join()!==[...TG_CX].join(); TG_CX=cx; if(changed) loadBoat();}catch(e){}
+  $("avvik").innerHTML=html;
+}
 loadAvvik(); setInterval(loadAvvik,5*60e3);
 // keep a phone/tablet screen awake while the page is open
 let wl=null;async function wake(){try{wl=await navigator.wakeLock?.request("screen");}catch(e){}}
