@@ -272,6 +272,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
   .seaclose{display:inline-block}
 }
 @media (pointer:coarse){
+  .seaclose{display:inline-block}
   .touchnav{display:flex}
   .tvclose{display:block}
   .hint{display:none}
@@ -289,7 +290,10 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
   .tide{grid-template-columns:1fr}
   .wx{grid-template-columns:1fr!important}
   .hint,.foot{display:none}
-  #sea{position:static;zoom:2.3;width:calc(100vw / 2.3);display:flex!important;padding-top:0}
+  #sea{--u:2.4vw;overflow-y:auto;padding:12px max(12px,env(safe-area-inset-right,0px)) 90px max(12px,env(safe-area-inset-left,0px))}
+  #sea .sea-tables{grid-template-columns:1fr;flex-shrink:0;min-height:auto}
+  #sea .panel{overflow:visible;flex-shrink:0}
+  #sea h2{font-size:calc(2*var(--u))}
   #sea .back{display:none}
   .boatlist{overflow:visible;-webkit-mask-image:none;mask-image:none}
   .sea-tables{grid-template-columns:1fr}
@@ -462,7 +466,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261027175135";
+const BUILD="20261027175234";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -771,7 +775,7 @@ async function loadBoat(){
 let ferryOn=false;
 const portrait=()=>matchMedia("(orientation:portrait)").matches;
 $("nav-tv").addEventListener("click",e=>{e.stopPropagation();closeSea();closeFerry();openTV();});
-$("nav-sea").addEventListener("click",e=>{e.stopPropagation();if(portrait())$("sea").scrollIntoView({behavior:"smooth"});else{closeFerry();openSea();}});
+$("nav-sea").addEventListener("click",e=>{e.stopPropagation();if(seaOn)closeSea();else{closeFerry();openSea();}});
 function closeFerry(){}
 
 /* ---------- sea forecast tables, 48 h in 3-h steps ---------- */
