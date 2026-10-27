@@ -245,9 +245,12 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 .cn{display:inline-block;font-size:calc(.85*var(--u));font-weight:600;border-radius:calc(.3*var(--u));padding:0 calc(.35*var(--u))}
 .cn.bus{background:rgba(127,220,198,.18);color:var(--kelp)}
 .cn.taxi{background:rgba(255,199,102,.2);color:var(--lamp)}
+.cn.book{background:rgba(255,199,102,.25);color:var(--lamp)}
 .cn.need{background:rgba(255,107,107,.18);color:#ff9a8a}
 .school{font-size:calc(1*var(--u));line-height:1.35;border-radius:calc(.5*var(--u));padding:calc(.35*var(--u)) calc(.6*var(--u));background:rgba(127,220,198,.12)}
 .school:empty{display:none}
+.bookrem{font-size:calc(.95*var(--u));border-radius:calc(.5*var(--u));padding:calc(.35*var(--u)) calc(.6*var(--u));background:rgba(255,199,102,.25)}
+.bookrem:empty{display:none}
 .school b{font-weight:600}
 .school.warn{background:rgba(255,199,102,.22)}
 .school.bad{background:rgba(255,107,107,.25)}
@@ -369,6 +372,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
       <div class="alerts" id="alerts"></div>
       <div class="hols" id="hols"></div>
       <div class="school" id="school"></div>
+      <div class="bookrem" id="bookrem"></div>
     </div>
     <span class="cal-month" id="calmonth" hidden></span>
   </section>
@@ -458,7 +462,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261026160114";
+const BUILD="20261027175135";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -657,7 +661,7 @@ async function loadObs(){
 /* ---------- ferry 820 via Entur (same data as the AtB app), 5 days ---------- */
 const STOP_SORBUROY="NSR:StopPlace:42925", STOP_DYROY="NSR:StopPlace:60419", STOP_DYROY_BUS="NSR:StopPlace:43525";
 async function entur(stop){
-  const q=`{stopPlace(id:"${stop}"){estimatedCalls(numberOfDepartures:250,timeRange:432000,arrivalDeparture:both,includeCancelledTrips:true,whiteListed:{lines:["ATB:Line:2_820"]}){realtime cancellation forBoarding forAlighting situations{summary{value} description{value}} aimedArrivalTime expectedArrivalTime aimedDepartureTime expectedDepartureTime destinationDisplay{frontText} serviceJourney{id line{publicCode}}}}}`;
+  const q=`{stopPlace(id:"${stop}"){estimatedCalls(numberOfDepartures:250,timeRange:432000,arrivalDeparture:both,includeCancelledTrips:true,whiteListed:{lines:["ATB:Line:2_820"]}){realtime cancellation forBoarding forAlighting situations{summary{value} description{value}} notices{text} aimedArrivalTime expectedArrivalTime aimedDepartureTime expectedDepartureTime destinationDisplay{frontText} serviceJourney{id line{publicCode} notices{text}}}}}`;
   const r=await fetch("https://api.entur.io/journey-planner/v3/graphql",{method:"POST",headers:{"Content-Type":"application/json","ET-Client-Name":"imgroupeu-sorburoy-tv"},body:JSON.stringify({query:q})});
   const d=await r.json(); return (d.data?.stopPlace?.estimatedCalls||[]).filter(c=>c.serviceJourney.line.publicCode==="820");
 }
@@ -695,6 +699,8 @@ function boatState(c,aim,exp,need){
   return late>=2?{cls:"st-late",chip:"late",txt:`+${late} min`}:{cls:"st-ok",chip:"ok",txt:"laiku"};
 }
 const dayKey=d=>d.toLocaleDateString("en-CA",{timeZone:TZ});
+// AtB marks request stops in the notices: "Bestillingsanløp, ring innen kl.16:00 dagen før på tlf. 02867"
+const needsBooking=c=>[...(c?.notices||[]),...(c?.serviceJourney?.notices||[])].some(n=>/bestill|ring\s+(innen|02\s?867)|Only on request|call 02867/i.test(n.text||""));
 const jk=(c,t)=>c.serviceJourney.id+"|"+dayKey(new Date(t));
 async function loadBoat(){
   try{
@@ -747,13 +753,17 @@ async function loadBoat(){
       if(e.kind==="in"&&e.arrCall){const s2=boatState(e.arrCall,e.aim,e.exp,"alight"); if(s2.chip==="cx") st=s2;}
       const moved=e.c.realtime&&Math.abs(e.exp-e.aim)>=120e3;
       const sit=[...(e.c.situations||[]),...(e.arrCall?.situations||[])].map(x=>x.summary?.[0]?.value).filter(Boolean);
+      const book=e.kind==="out"&&needsBooking(e.c);
       let what, conn="";
       if(e.kind==="out"){ what=`Sørburøy → Dyrøy <span class="tm2">${fmtT(e.dyArr)}</span>`;
         conn=e.toSis&&!e.toSis.flex?"":`<span class="cn need">🚕 taksi Dyrøy → Sistranda</span>`; }
       else { what=`Dyrøy → Sørburøy${e.arr?` <span class="tm2">${fmtT(e.arr)}</span>`:""}`;
         conn=""; }
-      html+=`<div class="brow ${st.cls}${e.exp<now?" past":""}"><span class="bt-t">${fmtT(moved?e.exp:e.aim)}${moved?`<s>${fmtT(e.aim)}</s>`:""}</span><span class="bt-d">${what}</span><span class="bt-c">${st.txt?`<span class="bt-s ${st.chip}">${st.txt}</span>`:""}${conn}</span>${sit.length?`<span class="bt-sit">⚠ ${[...new Set(sit)].join(" · ")}</span>`:""}</div>`;
+      html+=`<div class="brow ${st.cls}${e.exp<now?" past":""}"><span class="bt-t">${fmtT(moved?e.exp:e.aim)}${moved?`<s>${fmtT(e.aim)}</s>`:""}</span><span class="bt-d">${what}</span><span class="bt-c">${st.txt?`<span class="bt-s ${st.chip}">${st.txt}</span>`:""}${book?`<span class="cn book">📞 užsakyti iki 16:00 dieną prieš · 02867</span>`:""}${conn}</span>${sit.length?`<span class="bt-sit">⚠ ${[...new Set(sit)].join(" · ")}</span>`:""}</div>`;
     }
+    const tmr=keyOf(addD(osloToday(),1)), nowH=+new Date().toLocaleString("en-US",{timeZone:TZ,hour:"numeric",hour12:false});
+    const toBook=mine.filter(e=>e.kind==="out"&&needsBooking(e.c)&&dayKey(e.aim)===tmr&&!e.c.cancellation);
+    $("bookrem").innerHTML=toBook.length&&nowH<16?`<b>📞 Rytoj keltas ${toBook.map(e=>fmtT(e.aim)).join(", ")} iš Sørburøy – užsakyti šiandien iki 16:00, tel. 02867</b>`:"";
     $("boat").innerHTML=html||`<span style="color:var(--ink-2)">Artimiausių reisų nerasta.</span>`;
     $("boatupd").textContent="atnaujinta "+fmtT(new Date());
   }catch(e){ $("boat").innerHTML=`<span style="color:var(--ink-2);font-size:calc(1*var(--u))">Keltų duomenų nepavyko gauti.</span>`; }
