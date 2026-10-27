@@ -259,6 +259,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 .boatnote b{color:var(--ink)}
 .cn.none{color:var(--ink-2);font-weight:400}
 /* touch devices (phones, tablets): tap buttons instead of a remote */
+.navver{align-self:center;font-size:11px;color:var(--ink-2);opacity:.7}
 .touchnav{display:none;position:fixed;z-index:6;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));gap:8px}
 .touchnav button,.tvclose{font:600 15px/1 var(--body);color:var(--ink);background:rgba(7,22,32,.82);border:1px solid var(--glass-edge);border-radius:999px;padding:11px 16px;cursor:pointer}
 .seaclose{display:none;font:600 15px/1 var(--body);color:var(--ink);background:rgba(7,22,32,.82);border:1px solid var(--glass-edge);border-radius:999px;padding:11px 16px;cursor:pointer}
@@ -433,10 +434,11 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
     </div>
   </section>
 </main>
-<div class="foot">Orai: Open-Meteo (MET Norway modelis) · Potvyniai: Kartverket, CC BY 4.0 · <span id="upd"></span></div>
+<div class="foot">Orai: Open-Meteo (MET Norway modelis) · Potvyniai: Kartverket, CC BY 4.0 · <span id="upd"></span> · <span class="ver"></span></div>
 <div class="hint" id="hint"><kbd>OK</kbd> televizija · <kbd>▶</kbd> jūros prognozė · <kbd>▲▼</kbd> keltų sąrašas</div>
 
 <nav class="touchnav" id="touchnav">
+  <span class="ver navver"></span>
   <button type="button" id="nav-tv">📺 TV kanalai</button>
   <button type="button" id="nav-sea">🌊 Jūra</button>
 </nav>
@@ -466,12 +468,15 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261027175234";
+const BUILD="20261027175832";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
-setInterval(checkUpdate,5*60e3); setTimeout(checkUpdate,20e3);
+setInterval(checkUpdate,5*60e3); setTimeout(checkUpdate,3e3);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkUpdate();});
+window.addEventListener("pageshow",e=>{if(e.persisted)checkUpdate();});
 const $=id=>document.getElementById(id);
+try{const vt="versija "+BUILD.slice(4,8).replace(/(..)(..)/,"$1-$2")+" "+BUILD.slice(8,12).replace(/(..)(..)/,"$1:$2");document.querySelectorAll(".ver").forEach(e=>e.textContent=vt);}catch(e){}
 const fmtT=d=>d.toLocaleTimeString("lt-LT",{timeZone:TZ,hour:"2-digit",minute:"2-digit"});
 const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
