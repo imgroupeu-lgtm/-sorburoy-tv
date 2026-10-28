@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-28T13:45+01:00",
+ "updated": "2026-10-28T19:34+01:00",
  "date": "2026-10-28",
  "reasons": [
   "gūsiai iki 20 m/s"
@@ -9,10 +9,6 @@
  "gust": 20,
  "feels": 2,
  "alerts": [
-  {
-   "level": "yellow",
-   "event": "Kuling"
-  },
   {
    "level": "yellow",
    "event": "Kuling"
