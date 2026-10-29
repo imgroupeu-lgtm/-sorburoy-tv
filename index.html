@@ -465,7 +465,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261029190818";
+const BUILD="20261029191150";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -1093,6 +1093,9 @@ const CH=[
   {g:"Rusų k. · pagrindiniai",n:"Беларусь 24",u:"https://ngtrk.dc.beltelecom.by/ngtrk/smil:belarus24.smil/playlist.m3u8"},
   {g:"Rusų k. · naujienos",n:"Мир 24",u:"https://hls-mirtv.cdnvideo.ru/mirtv-parampublish/mir24_2500/playlist.m3u8"},
   {g:"Rusų k. · naujienos",n:"Известия",u:"https://hls-igi.cdnvideo.ru/igi/igi_hq/playlist.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"СТВ (Беларусь)",u:"https://ctv.dc.beltelecom.by/ctv/ctv.stream/playlist.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"Союзный",u:"https://souzny.mediacdn.ru/cdn/souzny/playlist.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"Мой мир",u:"https://moymir.ru/hls/onair.m3u8"},
   {g:"Rusų k. · naujienos",n:"Дождь",u:"https://wl.tvrain.tv/transcode/ngrp:ses_all/playlist.m3u8"},
   {g:"Rusų k. · naujienos",n:"Настоящее Время",u:"https://rfe-ingest.akamaized.net/hls/live/2033043/tvmc05/master.m3u8"},
   {g:"Rusų k. · naujienos",n:"RTVi",u:"https://amg17233-amg17233c1-wisptv-us-6409.playouts.now.amagi.tv/playlist.m3u8"},
@@ -1100,6 +1103,7 @@ const CH=[
   {g:"Rusų k. · naujienos",n:"DW (рус.)",u:"https://dwamdstream110.akamaized.net/hls/live/2017971/dwstream110/master.m3u8"},
   {g:"Rusų k. · naujienos",n:"360° Новости",u:"https://live-vgtrksmotrim.cdnvideo.ru/vgtrksmotrim/smotrim-live-03-srt.smil/playlist.m3u8"},
   {g:"Rusų k. · naujienos",n:"Первый информационный",u:"https://ngtrk.dc.beltelecom.by/ngtrk/smil:informacionnyy.smil/playlist.m3u8"},
+  {g:"Rusų k. · kinas ir serialai",n:"100% Праздник",u:"https://stream.smotrim.ru/hls/fasttv04/playlist_3.m3u8"},
   {g:"Rusų k. · kinas ir serialai",n:"Честный детектив",u:"https://live-vgtrksmotrim.cdnvideo.ru/vgtrksmotrim/smotrim-live-01.smil/playlist.m3u8"},
   {g:"Rusų k. · kinas ir serialai",n:"100% Классика",u:"https://stream.smotrim.ru/hls/fasttv03/playlist_3.m3u8"},
   {g:"Rusų k. · kinas ir serialai",n:"100% Любовь",u:"https://stream.smotrim.ru/hls/fasttv01/playlist_2.m3u8"},
@@ -1107,11 +1111,27 @@ const CH=[
   {g:"Rusų k. · kinas ir serialai",n:"100% Факты",u:"https://stream.smotrim.ru/hls/fasttv06/playlist_3.m3u8"},
   {g:"Rusų k. · vaikams",n:"Карусель",u:"https://stream.smotrim.ru/hls2/karusel/playlist_3.m3u8"},
   {g:"Rusų k. · vaikams",n:"100% Детское",u:"https://stream.smotrim.ru/hls/fasttv05/playlist_3.m3u8"},
+  {g:"Rusų k. · vaikams",n:"Солнце",u:"https://tv.mediacdn.ru/live/solntse/playlist.m3u8"},
+  {g:"Rusų k. · vaikams",n:"Радость моя",u:"https://radm.mediacdn.ru/cdn/radost/playlist_sdhigh.m3u8"},
   {g:"Rusų k. · laisvalaikis",n:"Спортивный",u:"https://live-3.otcnet.ru/sportivny/index.m3u8"},
   {g:"Rusų k. · laisvalaikis",n:"Муз Союз",u:"https://hls-tvsoyuz.cdnvideo.ru/tvsoyuz2/muzsoyuz.6fw0-58xp-acts-esy0/playlist.m3u8"},
   {g:"Rusų k. · laisvalaikis",n:"Беларусь 5 (sportas)",u:"https://ngtrk.dc.beltelecom.by/ngtrk/smil:belarus5.smil/playlist.m3u8"},
   {g:"Rusų k. · laisvalaikis",n:"Союз",u:"https://hls-tvsoyuz.cdnvideo.ru/tvsoyuz/soyuz/playlist.m3u8"},
   {g:"Rusų k. · laisvalaikis",n:"Спас",u:"https://tvspas.mediacdn.ru/cdn/spas/playlist.m3u8"},
+  {g:"Rusų k. · laisvalaikis",n:"Истоки",u:"https://istoki.tv/live/stream1/playlist.m3u8"},
+  {g:"Rusų k. · laisvalaikis",n:"Надежда",u:"https://live-tvhope.cdnvideo.ru/tvhope-pull/tvhope_1/playlist.m3u8"},
+  {g:"Rusų k. · laisvalaikis",n:"Три Ангела",u:"https://hls.tv.3angels.ru/stream.m3u8"},
+  {g:"Rusų k. · laisvalaikis",n:"Министерство идей",u:"https://live-minidey.cdnvideo.ru/minidey-srt/minidey/playlist.m3u8"},
+  {g:"Rusų k. · laisvalaikis",n:"Конгресс ТВ",u:"https://live-3.otcnet.ru/congresstv/index.m3u8"},
+  {g:"Rusų k. · regionai",n:"Беларусь 4 Витебск",u:"https://ngtrk.dc.beltelecom.by/vtv/bt4.stream/playlist.m3u8"},
+  {g:"Rusų k. · regionai",n:"Беларусь 4 Гомель",u:"https://live.dc.beltelecom.by/trkgomel/trkgomel.stream/playlist.m3u8"},
+  {g:"Rusų k. · regionai",n:"Витебск",u:"https://live.dc.beltelecom.by/vtv/vitebsk.stream/playlist.m3u8"},
+  {g:"Rusų k. · regionai",n:"ТВК 24 (Красноярск)",u:"https://air.tvk6.ru/tvk24/playlist.m3u8"},
+  {g:"Rusų k. · regionai",n:"Астрахань 24",u:"https://streaming.astrakhan.ru/astrakhan24/playlist.m3u8"},
+  {g:"Rusų k. · regionai",n:"Белгород 24",u:"https://belnovosti.cdn.easyhoster.ru:8443/stream.m3u8"},
+  {g:"Rusų k. · regionai",n:"Евразия (Орск)",u:"https://infochh.trkeurasia.ru/hlsinfoch/infochhd.m3u8"},
+  {g:"Rusų k. · regionai",n:"Rika TV (Актобе)",u:"https://live-rikatv.cdnvideo.ru/rikatv/rikatv_tcode.sdp/playlist.m3u8"},
+  {g:"Rusų k. · regionai",n:"Univer TV (Казань)",u:"https://cdn.universmotri.ru/live/smil:univer.smil/playlist.m3u8"},
   {g:"YouTube · lietuviški",n:"LRT Lituanica",yt:"m67gYVnA100"},
   {g:"YouTube · lietuviški",n:"LRT Radijas",yt:"izc0E-37OmY"},
   {g:"YouTube · rusų k.",n:"FREEДОМ",yt:"O0zGN7A7dMw"},
