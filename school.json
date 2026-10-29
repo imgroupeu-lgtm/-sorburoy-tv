@@ -1,19 +1,18 @@
 {
- "updated": "2026-10-28T23:50+01:00",
- "date": "2026-10-28",
- "reasons": [
-  "gūsiai iki 20 m/s"
- ],
+ "updated": "2026-10-29T03:00+01:00",
+ "date": "2026-11-04",
+ "reasons": [],
  "notes": [],
- "wind": 14,
- "gust": 20,
+ "wind": 13,
+ "gust": 19,
  "feels": 2,
- "alerts": [
+ "alerts": [],
+ "boats": [
   {
-   "level": "yellow",
-   "event": "Kuling"
+   "time": "09:20",
+   "to": "Dyrøy kai",
+   "cancelled": false
   }
  ],
- "boats": [],
- "verdict": "bad"
+ "verdict": "warn"
 }
