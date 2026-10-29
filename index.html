@@ -259,7 +259,6 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 .boatnote b{color:var(--ink)}
 .cn.none{color:var(--ink-2);font-weight:400}
 /* touch devices (phones, tablets): tap buttons instead of a remote */
-.navver{align-self:center;font-size:11px;color:var(--ink-2);opacity:.7}
 .touchnav{display:none;position:fixed;z-index:6;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));gap:8px}
 .touchnav button,.tvclose{font:600 15px/1 var(--body);color:var(--ink);background:rgba(7,22,32,.82);border:1px solid var(--glass-edge);border-radius:999px;padding:11px 16px;cursor:pointer}
 .seaclose{display:none;font:600 15px/1 var(--body);color:var(--ink);background:rgba(7,22,32,.82);border:1px solid var(--glass-edge);border-radius:999px;padding:11px 16px;cursor:pointer}
@@ -434,13 +433,11 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
     </div>
   </section>
 </main>
-<div class="foot">Orai: Open-Meteo (MET Norway modelis) · Potvyniai: Kartverket, CC BY 4.0 · <span id="upd"></span> · <span class="ver"></span></div>
+<div class="foot">Orai: Open-Meteo (MET Norway modelis) · Potvyniai: Kartverket, CC BY 4.0 · <span id="upd"></span></div>
 <div class="hint" id="hint"><kbd>OK</kbd> televizija · <kbd>▶</kbd> jūros prognozė · <kbd>▲▼</kbd> keltų sąrašas</div>
 
 <nav class="touchnav" id="touchnav">
-  <span class="ver navver"></span>
   <button type="button" id="nav-tv">📺 TV kanalai</button>
-  <button type="button" id="nav-sea">🌊 Jūra</button>
 </nav>
 
 <section id="sea" hidden>
@@ -468,7 +465,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261027175832";
+const BUILD="20261029190818";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD&&!tvOn) location.replace(location.pathname+"?v="+m[1]);}catch(e){}}
@@ -476,7 +473,6 @@ setInterval(checkUpdate,5*60e3); setTimeout(checkUpdate,3e3);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkUpdate();});
 window.addEventListener("pageshow",e=>{if(e.persisted)checkUpdate();});
 const $=id=>document.getElementById(id);
-try{const vt="versija "+BUILD.slice(4,8).replace(/(..)(..)/,"$1-$2")+" "+BUILD.slice(8,12).replace(/(..)(..)/,"$1:$2");document.querySelectorAll(".ver").forEach(e=>e.textContent=vt);}catch(e){}
 const fmtT=d=>d.toLocaleTimeString("lt-LT",{timeZone:TZ,hour:"2-digit",minute:"2-digit"});
 const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -780,7 +776,6 @@ async function loadBoat(){
 let ferryOn=false;
 const portrait=()=>matchMedia("(orientation:portrait)").matches;
 $("nav-tv").addEventListener("click",e=>{e.stopPropagation();closeSea();closeFerry();openTV();});
-$("nav-sea").addEventListener("click",e=>{e.stopPropagation();if(seaOn)closeSea();else{closeFerry();openSea();}});
 function closeFerry(){}
 
 /* ---------- sea forecast tables, 48 h in 3-h steps ---------- */
@@ -1089,7 +1084,15 @@ const CH=[
   {g:"Rusų k. · pagrindiniai",n:"Санкт-Петербург",u:"https://stream.smotrim.ru/hls2/ext_spbtv/playlist_5.m3u8"},
   {g:"Rusų k. · pagrindiniai",n:"Москва 24",u:"https://stream.smotrim.ru/hls2/moscow_24/playlist_3.m3u8"},
   {g:"Rusų k. · pagrindiniai",n:"Москва. Доверие",u:"https://stream.smotrim.ru/hls2/doverie/playlist_3.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"ТВ Центр",u:"https://tvc-hls.cdnvideo.ru/tvc-res/smil:vd9221_2.smil/playlist.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"Мир",u:"https://hls-mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"ETV+ (Estija)",u:"https://sb.err.ee/live/etvpluss.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"Беларусь 1",u:"https://ngtrk.dc.beltelecom.by/ngtrk/smil:belarus1.smil/playlist.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"Беларусь 2",u:"https://ngtrk.dc.beltelecom.by/ngtrk/smil:belarus2.smil/playlist.m3u8"},
+  {g:"Rusų k. · pagrindiniai",n:"Беларусь 3",u:"https://ngtrk.dc.beltelecom.by/ngtrk/smil:belarus3.smil/playlist.m3u8"},
   {g:"Rusų k. · pagrindiniai",n:"Беларусь 24",u:"https://ngtrk.dc.beltelecom.by/ngtrk/smil:belarus24.smil/playlist.m3u8"},
+  {g:"Rusų k. · naujienos",n:"Мир 24",u:"https://hls-mirtv.cdnvideo.ru/mirtv-parampublish/mir24_2500/playlist.m3u8"},
+  {g:"Rusų k. · naujienos",n:"Известия",u:"https://hls-igi.cdnvideo.ru/igi/igi_hq/playlist.m3u8"},
   {g:"Rusų k. · naujienos",n:"Дождь",u:"https://wl.tvrain.tv/transcode/ngrp:ses_all/playlist.m3u8"},
   {g:"Rusų k. · naujienos",n:"Настоящее Время",u:"https://rfe-ingest.akamaized.net/hls/live/2033043/tvmc05/master.m3u8"},
   {g:"Rusų k. · naujienos",n:"RTVi",u:"https://amg17233-amg17233c1-wisptv-us-6409.playouts.now.amagi.tv/playlist.m3u8"},
@@ -1106,6 +1109,8 @@ const CH=[
   {g:"Rusų k. · vaikams",n:"100% Детское",u:"https://stream.smotrim.ru/hls/fasttv05/playlist_3.m3u8"},
   {g:"Rusų k. · laisvalaikis",n:"Спортивный",u:"https://live-3.otcnet.ru/sportivny/index.m3u8"},
   {g:"Rusų k. · laisvalaikis",n:"Муз Союз",u:"https://hls-tvsoyuz.cdnvideo.ru/tvsoyuz2/muzsoyuz.6fw0-58xp-acts-esy0/playlist.m3u8"},
+  {g:"Rusų k. · laisvalaikis",n:"Беларусь 5 (sportas)",u:"https://ngtrk.dc.beltelecom.by/ngtrk/smil:belarus5.smil/playlist.m3u8"},
+  {g:"Rusų k. · laisvalaikis",n:"Союз",u:"https://hls-tvsoyuz.cdnvideo.ru/tvsoyuz/soyuz/playlist.m3u8"},
   {g:"Rusų k. · laisvalaikis",n:"Спас",u:"https://tvspas.mediacdn.ru/cdn/spas/playlist.m3u8"},
   {g:"YouTube · lietuviški",n:"LRT Lituanica",yt:"m67gYVnA100"},
   {g:"YouTube · lietuviški",n:"LRT Radijas",yt:"izc0E-37OmY"},
