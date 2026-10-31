@@ -282,6 +282,17 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
   .chgroup{font-size:11px}
   .tvhelp{display:none}
 }
+html.webos *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;animation:none!important;transition:none!important}
+html.webos .panel{background:rgba(9,24,36,.88)}
+html.webos .tvbar{display:flex}
+html.webos #tv{z-index:9}
+html.webos .tvhelp{display:none}
+html.webos .chcount{font-size:calc(1*var(--u))}
+.tvbar{display:none;position:absolute;z-index:8;left:50%;transform:translateX(-50%);bottom:calc(1.6*var(--u));gap:calc(.8*var(--u))}
+.tvbar button{font:600 calc(1.2*var(--u))/1 var(--body);color:var(--ink);background:rgba(7,22,32,.85);border:1px solid var(--glass-edge);border-radius:999px;padding:calc(.6*var(--u)) calc(1.3*var(--u));cursor:pointer}
+.tvbar button:hover{background:rgba(127,220,198,.4)}
+html.webos .chlist .ch{padding:calc(.55*var(--u)) calc(.8*var(--u))}
+html.webos .chlist .ch:hover{background:rgba(127,220,198,.3);color:var(--ink)}
 /* LG webOS browser: the remote works as a pointer, so show clickable buttons */
 .lgonly{display:none}
 html.webos .touchnav{display:flex;gap:calc(.8*var(--u))}
@@ -472,13 +483,14 @@ html.webos .touchnav button:hover,html.webos .tvclose:hover,html.webos .seaclose
   <div class="banner hide" id="banner"><span class="bn" id="bname"></span><span class="bt" id="btext"></span></div>
   <nav class="chlist" id="chlist"></nav>
   <button type="button" class="tvclose" id="tvclose">✕ Uždaryti</button>
+  <nav class="tvbar" id="tvbar"><button type="button" data-a="prev">▲ Ankstesnis</button><button type="button" data-a="list">☰ Kanalų sąrašas</button><button type="button" data-a="next">▼ Kitas</button><button type="button" data-a="close">✕ Į ekraną</button></nav>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261031201756";
+const BUILD="20261031202535";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD){ try{if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} location.replace(location.pathname+"?v="+m[1]); }}catch(e){}}
@@ -488,7 +500,8 @@ window.addEventListener("pageshow",e=>{if(e.persisted)checkUpdate();});
 const $=id=>document.getElementById(id);
 if(/web0s|webos|netcast/i.test(navigator.userAgent)) document.documentElement.classList.add("webos");
 const fmtT=d=>d.toLocaleTimeString("lt-LT",{timeZone:TZ,hour:"2-digit",minute:"2-digit"});
-const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const IS_WEBOS=document.documentElement.classList.contains("webos");
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches||IS_WEBOS;
 
 /* shared live state that drives the sky */
 const S={wind:4,dir:225,cloud:50,precip:0,code:2,sunrise:null,sunset:null,tide:.5};
@@ -1013,6 +1026,7 @@ function seedDrops(){
 let last=0, phase=0;
 function frame(ts){
   if(!REDUCED) requestAnimationFrame(frame);
+  if(typeof tvOn!=="undefined"&&tvOn) return;
   if(ts-last<33) return; const dt=Math.min(.1,(ts-last)/1000); last=ts;
   const now=Date.now(), e=elev(now), P=palette(e,S.cloud);
   const vxTo=Math.sin((S.dir+180)*Math.PI/180); // +1 = blowing toward right (east)
@@ -1169,6 +1183,7 @@ const CH=[
   {g:"Rusų k. · regionai",n:"Север (Нарьян-Мар)",u:"https://2vko9pchwon.a.trbcdn.net/livemaster/8ilgc_cw63ucn03p.smil/playlist.m3u8"},
   {g:"YouTube · lietuviški",n:"LRT Lituanica",yt:"m67gYVnA100"},
   {g:"YouTube · lietuviški",n:"LRT Radijas",yt:"izc0E-37OmY"},
+  {g:"YouTube · lietuviški",n:"LRT VAIKAI · filmukai",ytl:["RGBwLr0KAnw","4RxDQp1VONo","QxoAscZHkws","Yhn1NkC3COc","utBN2HSZLI8","ByUmnCEdV-Y","edV_8UCucvc","BZl8-lMGB_8","jogfLYNTDx0","ktxUmlvIB8o","kr8dTvk0pTg","x1ti-k2x1sM","353INY3mK_o","F7jsrqqLDDE","dZ2t8NZqkps","nfZWSskfQq0","WxBt4WCKE3s","QeMN4o7KBRg","RkoTgad5L_w"]},
   {g:"YouTube · rusų k.",n:"FREEДОМ",yt:"O0zGN7A7dMw"},
   {g:"YouTube · rusų k.",n:"Радио Свобода",yt:"_1RM28GoU3E"},
   {g:"YouTube · rusų k.",n:"Союзмультфильм · классика",ytl:["ILOPAIicEFE","bhGJ2QIX0TI","w8T_2oJ6OFQ","EZ70fF0htjQ","S6OTVEAOfEA","akXy9-I91sA","oZHGe8BTscA","ms9gHyiwRio","nZHWwxEkXt0","8kizrLu-fnE","dzmaiQOnfa0","cuBVLwMwgNY","SDk8naEe2e4","6rgDELEQX_k","B9QtYhVBrZ4","sStuI47cE_4"]}
@@ -1207,6 +1222,11 @@ function play(i){
 $("chlist").addEventListener("click",e=>{const el=e.target.closest(".ch");if(!el)return;e.stopPropagation();sel=+el.id.slice(2);play(sel);});
 $("tvclose").addEventListener("click",e=>{e.stopPropagation();closeTV();});
 $("tv").addEventListener("click",()=>{showList();});
+$("tvbar").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;e.stopPropagation();const a=b.dataset.a;
+  if(a==="prev"){sel=(playing-1+CH.length)%CH.length;play(sel);} else if(a==="next"){sel=(playing+1)%CH.length;play(sel);}
+  else if(a==="list"){ if($("chlist").classList.contains("hide")) showList(); else $("chlist").classList.add("hide"); } else closeTV();});
+$("chlist").addEventListener("mouseenter",()=>clearTimeout(listTimer));
+$("chlist").addEventListener("mouseleave",()=>{ if(playing>=0){clearTimeout(listTimer);listTimer=setTimeout(()=>$("chlist").classList.add("hide"),6000);} });
 function openTV(){ tvOn=true; $("tv").hidden=false; renderList(); showList(); if(playing<0) play(sel); }
 function closeTV(){ tvOn=false; stop(); playing=-1; $("tv").hidden=true; }
 try{const q=new URLSearchParams(location.search);if(q.has("tv")){const n=+q.get("ch");if(n>0&&n<=CH.length)sel=n-1;setTimeout(openTV,500);}}catch(e){}
