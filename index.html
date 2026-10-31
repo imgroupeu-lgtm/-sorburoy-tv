@@ -478,7 +478,7 @@ html.webos .touchnav button:hover,html.webos .tvclose:hover,html.webos .seaclose
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261031201221";
+const BUILD="20261031201530";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD){ try{if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} location.replace(location.pathname+"?v="+m[1]); }}catch(e){}}
@@ -1211,6 +1211,8 @@ const KEY={up:["ArrowUp"],down:["ArrowDown"],ok:["Enter"," "],back:["Backspace",
   left:["ArrowLeft"],right:["ArrowRight"],chUp:["ChannelUp","PageUp"],chDown:["ChannelDown","PageDown"]};
 const is=(e,k)=>KEY[k].includes(e.key)||(k==="back"&&[461,10009,8,27].includes(e.keyCode))||(k==="chUp"&&e.keyCode===427)||(k==="chDown"&&e.keyCode===428);
 addEventListener("keydown",e=>{
+  // LG browser: arrows/OK steer the pointer, so outside TV mode only BACK is handled here; buttons are clicked
+  if(document.documentElement.classList.contains("webos") && !tvOn){ if(seaOn&&is(e,"back")){e.preventDefault();closeSea();} return; }
   if(!tvOn && seaOn){ if(is(e,"back")||is(e,"left")||is(e,"right")){e.preventDefault();closeSea();} else if(is(e,"ok")){e.preventDefault();closeSea();openTV();} return; }
   if(!tvOn && !seaOn && (is(e,"up")||is(e,"down"))){ e.preventDefault(); $("boat").scrollBy({top:(is(e,"down")?1:-1)*$("boat").clientHeight*.6,behavior:"smooth"}); return; }
   if(!tvOn && is(e,"right")){ e.preventDefault(); openSea(); return; }
