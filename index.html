@@ -478,7 +478,7 @@ html.webos .touchnav button:hover,html.webos .tvclose:hover,html.webos .seaclose
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261031201530";
+const BUILD="20261031201756";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD){ try{if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} location.replace(location.pathname+"?v="+m[1]); }}catch(e){}}
@@ -1170,14 +1170,15 @@ const CH=[
   {g:"YouTube · lietuviški",n:"LRT Lituanica",yt:"m67gYVnA100"},
   {g:"YouTube · lietuviški",n:"LRT Radijas",yt:"izc0E-37OmY"},
   {g:"YouTube · rusų k.",n:"FREEДОМ",yt:"O0zGN7A7dMw"},
-  {g:"YouTube · rusų k.",n:"Радио Свобода",yt:"_1RM28GoU3E"}
+  {g:"YouTube · rusų k.",n:"Радио Свобода",yt:"_1RM28GoU3E"},
+  {g:"YouTube · rusų k.",n:"Союзмультфильм · классика",ytl:["ILOPAIicEFE","bhGJ2QIX0TI","w8T_2oJ6OFQ","EZ70fF0htjQ","S6OTVEAOfEA","akXy9-I91sA","oZHGe8BTscA","ms9gHyiwRio","nZHWwxEkXt0","8kizrLu-fnE","dzmaiQOnfa0","cuBVLwMwgNY","SDk8naEe2e4","6rgDELEQX_k","B9QtYhVBrZ4","sStuI47cE_4"]}
 ];
 let tvOn=false, sel=0, playing=-1, hls=null, listTimer=0, banTimer=0, numBuf="", numTimer=0;
 try{const s=+localStorage.getItem("ch");if(s>=0&&s<CH.length)sel=s;}catch(e){}
 function renderList(){
   let html="",g="";
   CH.forEach((c,i)=>{if(c.g!==g){g=c.g;html+=`<div class="chgroup">${g}</div>`;}
-    html+=`<div class="ch${i===sel?" sel":""}${i===playing?" on":""}" id="ch${i}"><span class="n">${i+1}</span><span>${c.n}</span><span class="src">${c.yt?"YT":""}</span></div>`;});
+    html+=`<div class="ch${i===sel?" sel":""}${i===playing?" on":""}" id="ch${i}"><span class="n">${i+1}</span><span>${c.n}</span><span class="src">${c.yt||c.ytl?"YT":""}</span></div>`;});
   html=`<div class="chcount">${CH.length} kanalai · slink žemyn ▼</div>`+html;
   $("chlist").innerHTML=html+`<div class="tvhelp">▲▼ kanalas · OK rodyti · ◀ atgal į ekraną · skaičiai – kanalo nr.</div>`;
   const el=$("ch"+sel); if(el) el.scrollIntoView({block:"nearest"});
@@ -1189,6 +1190,8 @@ function play(i){
   stop(); playing=i; const c=CH[i]; $("tvmsg").textContent="Jungiamasi…";
   try{localStorage.setItem("ch",i);}catch(e){}
   banner(`${i+1} · ${c.n}`,c.g);
+  if(c.ytl){ const k=Math.floor(Math.random()*c.ytl.length), L=c.ytl.slice(k).concat(c.ytl.slice(0,k));
+    $("yt").hidden=false; $("yt").src=`https://www.youtube-nocookie.com/embed/${L[0]}?autoplay=1&mute=0&controls=0&rel=0&loop=1&playlist=${L.join(",")}`; $("tvmsg").textContent=""; renderList(); showList(); return; }
   if(c.yt){ $("yt").hidden=false; $("yt").src=`https://www.youtube-nocookie.com/embed/${c.yt}?autoplay=1&mute=0&controls=0&rel=0`; $("tvmsg").textContent=""; renderList(); showList(); return; }
   const v=$("vid"); v.onplaying=()=>{$("tvmsg").textContent="";};
   const fail=()=>{$("tvmsg").textContent=`${c.n} šiuo metu nerodo. Pasirink kitą kanalą.`;};
@@ -1206,6 +1209,7 @@ $("tvclose").addEventListener("click",e=>{e.stopPropagation();closeTV();});
 $("tv").addEventListener("click",()=>{showList();});
 function openTV(){ tvOn=true; $("tv").hidden=false; renderList(); showList(); if(playing<0) play(sel); }
 function closeTV(){ tvOn=false; stop(); playing=-1; $("tv").hidden=true; }
+try{const q=new URLSearchParams(location.search);if(q.has("tv")){const n=+q.get("ch");if(n>0&&n<=CH.length)sel=n-1;setTimeout(openTV,500);}}catch(e){}
 try{if(sessionStorage.getItem("reopenTV")){sessionStorage.removeItem("reopenTV");setTimeout(openTV,500);}}catch(e){}
 const KEY={up:["ArrowUp"],down:["ArrowDown"],ok:["Enter"," "],back:["Backspace","Escape","GoBack","BrowserBack","XF86Back"],
   left:["ArrowLeft"],right:["ArrowRight"],chUp:["ChannelUp","PageUp"],chDown:["ChannelDown","PageDown"]};
