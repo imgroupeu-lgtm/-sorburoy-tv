@@ -282,6 +282,17 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
   .chgroup{font-size:11px}
   .tvhelp{display:none}
 }
+/* LG webOS browser: the remote works as a pointer, so show clickable buttons */
+.lgonly{display:none}
+html.webos .touchnav{display:flex;gap:calc(.8*var(--u))}
+html.webos .touchnav button,html.webos .tvclose,html.webos .seaclose{font-size:calc(1.1*var(--u));padding:calc(.55*var(--u)) calc(1.1*var(--u))}
+html.webos .lgonly{display:inline-block}
+html.webos .seaclose{display:inline-block}
+html.webos .tvclose{display:block}
+html.webos .hint{display:none}
+html.webos .foot{right:auto;left:calc(3*var(--u))}
+html.webos .touchnav{bottom:calc(.4*var(--u));right:calc(2*var(--u))}
+html.webos .touchnav button:hover,html.webos .tvclose:hover,html.webos .seaclose:hover{background:rgba(127,220,198,.35)}
 /* phone / tablet held upright: one column, scaled up, scrollable */
 @media (orientation:portrait){
   :root{--u:1vw}
@@ -439,6 +450,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <nav class="touchnav" id="touchnav">
   <button type="button" id="nav-tv">📺 TV kanalai</button>
+  <button type="button" id="nav-sea" class="lgonly">🌊 Jūra</button>
 </nav>
 
 <section id="sea" hidden>
@@ -466,7 +478,7 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261029201807";
+const BUILD="20261031201221";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD){ try{if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} location.replace(location.pathname+"?v="+m[1]); }}catch(e){}}
@@ -474,6 +486,7 @@ setInterval(checkUpdate,5*60e3); setTimeout(checkUpdate,3e3);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkUpdate();});
 window.addEventListener("pageshow",e=>{if(e.persisted)checkUpdate();});
 const $=id=>document.getElementById(id);
+if(/web0s|webos|netcast/i.test(navigator.userAgent)) document.documentElement.classList.add("webos");
 const fmtT=d=>d.toLocaleTimeString("lt-LT",{timeZone:TZ,hour:"2-digit",minute:"2-digit"});
 const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -777,6 +790,7 @@ async function loadBoat(){
 let ferryOn=false;
 const portrait=()=>matchMedia("(orientation:portrait)").matches;
 $("nav-tv").addEventListener("click",e=>{e.stopPropagation();closeSea();closeFerry();openTV();});
+$("nav-sea").addEventListener("click",e=>{e.stopPropagation();if(seaOn)closeSea();else{closeFerry();openSea();}});
 function closeFerry(){}
 
 /* ---------- sea forecast tables, 48 h in 3-h steps ---------- */
