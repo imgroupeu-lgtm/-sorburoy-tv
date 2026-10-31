@@ -1,28 +1,29 @@
 {
- "updated": "2026-10-31T06:35:45+00:00",
+ "updated": "2026-10-31T13:03:40+00:00",
  "stations": [
   {
    "id": "SN71850",
    "name": "Halten fyr",
+   "speed": 10.2,
+   "time": "2026-10-31T12:00:00.000Z",
    "errors": [
-    "wind_speed: IndexError",
-    "wind_from_direction: IndexError"
+    "max(wind_speed_of_gust PT10M): HTTP 404 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n",
+    "max(wind_speed_of_gust PT1H): HTTP 404 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n",
+    "wind_from_direction: HTTP 404 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n"
    ],
-   "gust": 9.2,
-   "time": "2026-10-31T06:30:00.000Z",
-   "temp": 10.4
+   "temp": 10.9
   },
   {
    "id": "SN65930",
    "name": "Bogøya",
-   "speed": 5.2,
-   "time": "2026-10-31T06:30:00.000Z",
-   "gust": 6.7,
+   "speed": 7.1,
+   "time": "2026-10-31T12:50:00.000Z",
+   "gust": 9.2,
    "errors": [
     "max(wind_speed_of_gust PT1H): HTTP 412 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n"
    ],
-   "dir": 231,
-   "temp": 11.8
+   "dir": 230,
+   "temp": 11.4
   }
  ]
 }
