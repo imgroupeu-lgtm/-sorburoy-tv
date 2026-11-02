@@ -490,7 +490,7 @@ html.webos .touchnav button:hover,html.webos .tvclose:hover,html.webos .seaclose
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261031214748";
+const BUILD="20261102162030";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD){ try{if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} location.replace(location.pathname+"?v="+m[1]); }}catch(e){}}
@@ -1108,7 +1108,28 @@ const CH=[
   {g:"Norvegija",n:"NRK2",u:"https://nrk-live-no.akamaized.net/nrk2/muxed.m3u8"},
   {g:"Norvegija",n:"NRK3",u:"https://nrk-live-no.akamaized.net/nrk3/muxed.m3u8"},
   {g:"Norvegija",n:"NRK Super",u:"https://nrk-live-no.akamaized.net/nrksuper/muxed.m3u8"},
-  {g:"Norvegija",n:"Frikanalen",u:"https://frikanalen.no/stream/index.m3u8"},
+  {g:"Vaikams · norvegų / anglų k.",n:"Peppa Gris (norsk)",yt:"pBriWozro7s"},
+  {g:"Vaikams · norvegų / anglų k.",n:"PBS Kids",u:"https://livestream.pbskids.org/out/v1/14507d931bbe48a69287e4850e53443c/est.m3u8"},
+  {g:"Vaikams · norvegų / anglų k.",n:"Pop (UK)",u:"https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg01753-narrativeentert-popkids-lggb/playlist.m3u8"},
+  {g:"Vaikams · norvegų / anglų k.",n:"Toon Goggles",u:"https://stream-us-east-1.getpublica.com/playlist.m3u8?network_id=37"},
+  {g:"Vaikams · norvegų / anglų k.",n:"Smurfai (Smurf TV)",u:"https://stream.ads.ottera.tv/playlist.m3u8?network_id=4065"},
+  {g:"Vaikams · norvegų / anglų k.",n:"Bluey",yt:"RHUauMcYlX0"},
+  {g:"Vaikams · norvegų / anglų k.",n:"Shaun the Sheep",yt:"-uMSBnD6lJ0"},
+  {g:"Vaikams · norvegų / anglų k.",n:"Tom & Jerry (Boomerang)",yt:"rEKifG2XUZg"},
+  {g:"Vaikams · norvegų / anglų k.",n:"Curious George",yt:"010073k-cpk"},
+  {g:"Vaikams · norvegų / anglų k.",n:"Baby Looney Tunes (Cartoonito)",yt:"XfZetbS9084"},
+  {g:"Vaikams · norvegų / anglų k.",n:"Cartoon Network UK",yt:"PGVGfnYKMns"},
+  {g:"Vaikams · norvegų / anglų k.",n:"Disney Jr.",yt:"NnqqoM6NaFw"},
+  {g:"Vaikams · norvegų / anglų k.",n:"Lucas the Spider",yt:"t_nFGWJI_tI"},
+  {g:"Muzika",n:"Vevo Pop",u:"https://amg00056-amg00056c6-rakuten-uk-3235.playouts.now.amagi.tv/playlist.m3u8"},
+  {g:"Muzika",n:"Now 80s",u:"https://lightning-now80s-samsungnz.amagi.tv/playlist720p.m3u8"},
+  {g:"Muzika",n:"Totalmusic",u:"https://cdn.global.elektamedia.com/live/c7eds/Totalmusic/SA_LIVE_hls_enc/master.m3u8"},
+  {g:"Muzika",n:"Totalmusic 80s",u:"https://cdn.global.elektamedia.com/live/c7eds/Totalmusic_80s/SA_LIVE_hls_enc/master.m3u8"},
+  {g:"Muzika",n:"Totalmusic 2000s",u:"https://cdn.global.elektamedia.com/live/c7eds/Totalmusic_00s/SA_LIVE_hls_enc/master.m3u8"},
+  {g:"Muzika",n:"Totalmusic Dance",u:"https://cdn.global.elektamedia.com/live/c7eds/Totalmusic_Dance/SA_LIVE_hls_enc/master.m3u8"},
+  {g:"Muzika",n:"Totalmusic Concerts",u:"https://cdn.global.elektamedia.com/live/c7eds/Totalmusic_Concerts/SA_LIVE_hls_enc/master.m3u8"},
+  {g:"Muzika",n:"Lofi Girl",yt:"rFZHOHl-L8A"},
+  {g:"Muzika",n:"Chillhop Radio",yt:"5yx6BWlEVcY"},
   {g:"Rusų k. · pagrindiniai",n:"Россия 1",u:"https://stream.smotrim.ru/hls2/russia_hd/playlist_6.m3u8"},
   {g:"Rusų k. · pagrindiniai",n:"Звезда",u:"https://tvchannelstream1.tvzvezda.ru/cdn/tvzvezda/playlist.m3u8"},
   {g:"Rusų k. · pagrindiniai",n:"Санкт-Петербург",u:"https://stream.smotrim.ru/hls2/ext_spbtv/playlist_5.m3u8"},
@@ -1159,10 +1180,7 @@ const CH=[
   {g:"Rusų k. · laisvalaikis",n:"Конгресс ТВ",u:"https://live-3.otcnet.ru/congresstv/index.m3u8"},
   {g:"Rusų k. · laisvalaikis",n:"100% К одному",u:"https://stream.smotrim.ru/hls/fasttv08/playlist_3.m3u8"},
   {g:"Rusų k. · laisvalaikis",n:"Открытый мир. Здоровье",u:"https://v4.proofix.ru/0mir/index.m3u8"},
-  {g:"Rusų k. · laisvalaikis",n:"ТелеДом",u:"https://iam-profi.ru/hls-live/livepkgr/_definst_/liveevent/td720.m3u8"},
   {g:"Rusų k. · laisvalaikis",n:"Витрина ТВ",u:"https://live-11cinema.cdnvideo.ru/11cinema/11cinema/playlist.m3u8"},
-  {g:"Rusų k. · laisvalaikis",n:"Shopping Live",u:"https://nonmirya7cc.a.trbcdn.net/livemaster/tzrz5_sazlypl5ot.smil/playlist.m3u8"},
-  {g:"Rusų k. · laisvalaikis",n:"Ювелирочка",u:"https://live-uvelirochka.cdnvideo.ru/uvelirochka/uvelirochka_720p3/playlist.m3u8"},
   {g:"Rusų k. · regionai",n:"Беларусь 4 Витебск",u:"https://ngtrk.dc.beltelecom.by/vtv/bt4.stream/playlist.m3u8"},
   {g:"Rusų k. · regionai",n:"Беларусь 4 Гомель",u:"https://live.dc.beltelecom.by/trkgomel/trkgomel.stream/playlist.m3u8"},
   {g:"Rusų k. · regionai",n:"Витебск",u:"https://live.dc.beltelecom.by/vtv/vitebsk.stream/playlist.m3u8"},
@@ -1174,7 +1192,6 @@ const CH=[
   {g:"Rusų k. · regionai",n:"Univer TV (Казань)",u:"https://cdn.universmotri.ru/live/smil:univer.smil/playlist.m3u8"},
   {g:"Rusų k. · regionai",n:"8 канал (Новосибирск)",u:"https://live-8knsk.cdnvideo.ru/8knsk/stream1/playlist.m3u8"},
   {g:"Rusų k. · regionai",n:"Грозный",u:"https://balancer.facecast.io/evacoder_hls_hi/UUMLQVAYVlZyH14GRENQVV0G/2/720-3.m3u8"},
-  {g:"Rusų k. · regionai",n:"Вайнах (Чечня)",u:"https://live.chechensoft.ru/vainahtv/ngrp:vaynahtv_all/playlist.m3u8"},
   {g:"Rusų k. · regionai",n:"ТНВ-Татарстан",u:"https://user91229.clients-cdnnow.ru/hls/user91229_1.m3u8"},
   {g:"Rusų k. · regionai",n:"Майдан (Казань)",u:"https://live-maidantv.cdnvideo.ru/maidantv/maidantv.smil/playlist.m3u8"},
   {g:"Rusų k. · regionai",n:"Pro Business (Уфа)",u:"https://tv-streaming.bsh.ru:21938/probusiness/probusiness.stream/playlist.m3u8"},
@@ -1209,7 +1226,8 @@ function play(i){
   if(c.ytl){ const k=Math.floor(Math.random()*c.ytl.length), L=c.ytl.slice(k).concat(c.ytl.slice(0,k));
     $("yt").hidden=false; $("yt").src=`https://www.youtube-nocookie.com/embed/${L[0]}?autoplay=1&mute=0&controls=0&rel=0&loop=1&playlist=${L.join(",")}`; $("tvmsg").textContent=""; renderList(); showList(); return; }
   if(c.yt){ $("yt").hidden=false; $("yt").src=`https://www.youtube-nocookie.com/embed/${c.yt}?autoplay=1&mute=0&controls=0&rel=0`; $("tvmsg").textContent=""; renderList(); showList(); return; }
-  const v=$("vid"); v.onplaying=()=>{$("tvmsg").textContent="";};
+  const v=$("vid"); clearTimeout(window.__failT); window.__failT=setTimeout(()=>{ if(playing===i && v.paused) $("tvmsg").textContent=`${c.n} šiuo metu nerodo. Pasirink kitą kanalą.`; },20000);
+  v.onplaying=()=>{$("tvmsg").textContent="";clearTimeout(window.__failT);};
   const fail=()=>{$("tvmsg").textContent=`${c.n} šiuo metu nerodo. Pasirink kitą kanalą.`;};
   if(window.Hls&&Hls.isSupported()){
     hls=new Hls({lowLatencyMode:false,maxBufferLength:20});
