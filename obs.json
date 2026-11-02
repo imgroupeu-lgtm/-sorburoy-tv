@@ -1,26 +1,26 @@
 {
- "updated": "2026-11-02T11:34:02+00:00",
+ "updated": "2026-11-02T20:52:51+00:00",
  "stations": [
   {
    "id": "SN71850",
    "name": "Halten fyr",
-   "speed": 7.5,
-   "time": "2026-11-02T11:30:00.000Z",
-   "gust": 9.5,
-   "dir": 272,
-   "temp": 8.8
+   "speed": 11.9,
+   "time": "2026-11-02T20:50:00.000Z",
+   "gust": 15.7,
+   "dir": 271,
+   "temp": 9.1
   },
   {
    "id": "SN65930",
    "name": "Bogøya",
-   "speed": 3.5,
-   "time": "2026-11-02T11:30:00.000Z",
-   "gust": 4.4,
+   "speed": 6.9,
+   "time": "2026-11-02T20:50:00.000Z",
+   "gust": 9.5,
    "errors": [
     "max(wind_speed_of_gust PT1H): HTTP 412 {\n  \"@context\" : \"https://frost.met.no/schema\",\n  \"@type\" : \"ErrorResponse\",\n  \"apiVersion\" : \"v0\",\n  \"license\" : \"https://creativecommons.org/licenses/by/3.0/n"
    ],
    "dir": 250,
-   "temp": 8.8
+   "temp": 10.1
   }
  ]
 }
