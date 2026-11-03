@@ -1,6 +1,14 @@
 {
- "updated": "2026-11-03T10:05Z",
+ "updated": "2026-11-03T17:48Z",
  "source": "https://www.torghatten.no/en/our-routes/deviations",
- "announcements_total": 9,
- "items": []
+ "announcements_total": 13,
+ "items": [
+  {
+   "line": "Dyrøy - Mausundvær - Sula ferjekai",
+   "type": "InformationForTravellers",
+   "text": "Grunnet nødvendig vedlikehold på hovedfartøy, vil reservefartøyet MS Frovær betjene rute 825 onsdag 04.11. og torsdag 05.11. Vi gjør oppmerksom på at reservefartøyet har lavere kapasitet enn ordinært fartøy, og det kan derfor bli begrenset plass på enkelte avganger. Vi beklager ulempene dette måtte medføre og takker for forståelsen.",
+   "updated": "2026-11-03T14:18:01.574320Z",
+   "departures": []
+  }
+ ]
 }
