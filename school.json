@@ -1,17 +1,12 @@
 {
- "updated": "2026-11-04T18:39+01:00",
+ "updated": "2026-11-04T23:52+01:00",
  "date": "2026-11-04",
  "reasons": [],
  "notes": [],
  "wind": 13,
  "gust": 19,
  "feels": 2,
- "alerts": [
-  {
-   "level": "yellow",
-   "event": "Kuling"
-  }
- ],
+ "alerts": [],
  "boats": [],
  "verdict": "warn"
 }
