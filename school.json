@@ -1,11 +1,11 @@
 {
- "updated": "2026-11-06T00:36+01:00",
+ "updated": "2026-11-06T04:39+01:00",
  "date": "2026-11-11",
  "reasons": [],
  "notes": [],
- "wind": 9,
- "gust": 13,
- "feels": 0,
+ "wind": 10,
+ "gust": 16,
+ "feels": 2,
  "alerts": [],
  "boats": [
   {
@@ -14,5 +14,5 @@
    "cancelled": false
   }
  ],
- "verdict": "ok"
+ "verdict": "warn"
 }
