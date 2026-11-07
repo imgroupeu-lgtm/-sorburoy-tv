@@ -286,14 +286,14 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 }
 html.webos *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;animation:none!important;transition:none!important}
 html.webos .panel{background:rgba(9,24,36,.88)}
-html.webos .chlist{padding-top:calc(7*var(--u));bottom:calc(4*var(--u))}
+html.webos .chlist{padding-top:calc(7*var(--u));bottom:calc(3*var(--u))}
 html.webos .tvbar{display:flex}
 html.onlytv .tvclose,html.onlytv .tvbar [data-a=close],html.onlytv .screen,html.onlytv .touchnav{display:none!important}
 html.onlytv body{background:#000}
 html.webos #tv{z-index:9}
 html.webos .tvhelp{display:none}
 html.webos .chcount{font-size:calc(1*var(--u))}
-.tvbar{display:none;position:absolute;z-index:8;left:calc(1.2*var(--u));bottom:calc(1*var(--u));gap:calc(.45*var(--u));align-items:center}
+.tvbar{display:none;position:absolute;z-index:8;left:calc(.5*var(--u));bottom:calc(.35*var(--u));gap:calc(.2*var(--u));align-items:center}
 .tvsep{width:calc(.8*var(--u))}
 .tvbar button{font:600 calc(.95*var(--u))/1 var(--body);color:var(--ink);background:rgba(7,22,32,.92);border:1px solid var(--glass-edge);border-radius:999px;padding:calc(.5*var(--u)) calc(.9*var(--u));cursor:pointer}
 .tvbar button:hover{background:rgba(127,220,198,.4)}
@@ -489,14 +489,14 @@ html.webos .touchnav button:hover,html.webos .tvclose:hover,html.webos .seaclose
   <div class="banner hide" id="banner"><span class="bn" id="bname"></span><span class="bt" id="btext"></span></div>
   <nav class="chlist" id="chlist"></nav>
   <button type="button" class="tvclose" id="tvclose">✕ Uždaryti</button>
-  <nav class="tvbar" id="tvbar"><button type="button" data-a="list">☰ Sąrašas</button><button type="button" data-a="up">▲ Aukštyn</button><button type="button" data-a="dn">▼ Žemyn</button><span class="tvsep"></span><button type="button" data-a="prev">⏮ Ankstesnis</button><button type="button" data-a="next">Kitas ⏭</button><button type="button" data-a="close">✕ Į ekraną</button></nav>
+  <nav class="tvbar" id="tvbar"><button type="button" data-a="up">▲ Aukštyn</button><button type="button" data-a="dn">▼ Žemyn</button><button type="button" data-a="list">☰ Sąrašas</button><span class="tvsep"></span><button type="button" data-a="prev">⏮ Ankstesnis</button><button type="button" data-a="next">Kitas ⏭</button><button type="button" data-a="close">✕ Į ekraną</button></nav>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261107181830";
+const BUILD="20261107181857";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD){ try{ if(sessionStorage.getItem("triedBuild")===m[1]) return; sessionStorage.setItem("triedBuild",m[1]); if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} const q=new URLSearchParams(location.search); q.set("v",m[1]); location.replace(location.pathname+"?"+q); }}catch(e){}}
