@@ -286,23 +286,16 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 }
 html.webos *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;animation:none!important;transition:none!important}
 html.webos .panel{background:rgba(9,24,36,.88)}
-.chpg{display:none;position:absolute;z-index:8;left:calc(27.6*var(--u));width:calc(6.5*var(--u));padding:calc(1.2*var(--u)) 0;font:600 calc(1.1*var(--u))/1.25 var(--body);color:var(--ink);background:rgba(7,22,32,.9);border:1px solid var(--glass-edge);border-radius:calc(.8*var(--u));cursor:pointer;text-align:center}
-.chpg:hover{background:rgba(127,220,198,.4)}
-#chup{top:calc(2*var(--u))} #chdn{bottom:calc(5*var(--u))}
-html.webos .chpg{display:block}
-/* LG browser shows its address bar when the pointer reaches the top edge: keep controls away from it */
-html.webos #chup{top:auto;bottom:calc(17*var(--u))}
-html.webos #chdn{bottom:calc(5*var(--u))}
-html.webos .chlist{padding-top:calc(7*var(--u))}
-html.webos .chlist.hide ~ .chpg{display:none}
+html.webos .chlist{padding-top:calc(7*var(--u));bottom:calc(4*var(--u))}
 html.webos .tvbar{display:flex}
 html.onlytv .tvclose,html.onlytv .tvbar [data-a=close],html.onlytv .screen,html.onlytv .touchnav{display:none!important}
 html.onlytv body{background:#000}
 html.webos #tv{z-index:9}
 html.webos .tvhelp{display:none}
 html.webos .chcount{font-size:calc(1*var(--u))}
-.tvbar{display:none;position:absolute;z-index:8;left:50%;transform:translateX(-50%);bottom:calc(1.6*var(--u));gap:calc(.8*var(--u))}
-.tvbar button{font:600 calc(1.2*var(--u))/1 var(--body);color:var(--ink);background:rgba(7,22,32,.85);border:1px solid var(--glass-edge);border-radius:999px;padding:calc(.6*var(--u)) calc(1.3*var(--u));cursor:pointer}
+.tvbar{display:none;position:absolute;z-index:8;left:calc(1.2*var(--u));bottom:calc(1*var(--u));gap:calc(.45*var(--u));align-items:center}
+.tvsep{width:calc(.8*var(--u))}
+.tvbar button{font:600 calc(.95*var(--u))/1 var(--body);color:var(--ink);background:rgba(7,22,32,.92);border:1px solid var(--glass-edge);border-radius:999px;padding:calc(.5*var(--u)) calc(.9*var(--u));cursor:pointer}
 .tvbar button:hover{background:rgba(127,220,198,.4)}
 html.webos .chlist .ch{padding:calc(.55*var(--u)) calc(.8*var(--u))}
 html.webos .chlist .ch:hover{background:rgba(127,220,198,.3);color:var(--ink)}
@@ -495,16 +488,15 @@ html.webos .touchnav button:hover,html.webos .tvclose:hover,html.webos .seaclose
   <div class="tvmsg" id="tvmsg"></div>
   <div class="banner hide" id="banner"><span class="bn" id="bname"></span><span class="bt" id="btext"></span></div>
   <nav class="chlist" id="chlist"></nav>
-  <button type="button" class="chpg" id="chup">▲<br>aukštyn</button><button type="button" class="chpg" id="chdn">▼<br>žemyn</button>
   <button type="button" class="tvclose" id="tvclose">✕ Uždaryti</button>
-  <nav class="tvbar" id="tvbar"><button type="button" data-a="list">☰ Kanalų sąrašas</button><button type="button" data-a="prev">▲ Ankstesnis</button><button type="button" data-a="next">▼ Kitas</button><button type="button" data-a="close">✕ Į ekraną</button></nav>
+  <nav class="tvbar" id="tvbar"><button type="button" data-a="list">☰ Sąrašas</button><button type="button" data-a="up">▲ Aukštyn</button><button type="button" data-a="dn">▼ Žemyn</button><span class="tvsep"></span><button type="button" data-a="prev">⏮ Ankstesnis</button><button type="button" data-a="next">Kitas ⏭</button><button type="button" data-a="close">✕ Į ekraną</button></nav>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261107181128";
+const BUILD="20261107181830";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD){ try{ if(sessionStorage.getItem("triedBuild")===m[1]) return; sessionStorage.setItem("triedBuild",m[1]); if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} const q=new URLSearchParams(location.search); q.set("v",m[1]); location.replace(location.pathname+"?"+q); }}catch(e){}}
@@ -1268,9 +1260,9 @@ function play(i){
 $("chlist").addEventListener("click",e=>{const el=e.target.closest(".ch");if(!el)return;e.stopPropagation();sel=+el.id.slice(2);play(sel);});
 $("tvclose").addEventListener("click",e=>{e.stopPropagation();closeTV();});
 $("tv").addEventListener("click",()=>{showList();});
-["chup","chdn"].forEach(id=>$(id).addEventListener("click",e=>{e.stopPropagation();const L=$("chlist");L.scrollBy({top:(id==="chup"?-1:1)*L.clientHeight*.8});hideListLater(8000);}));
 $("tvbar").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;e.stopPropagation();const a=b.dataset.a;
-  if(a==="prev"){sel=(playing-1+CH.length)%CH.length;play(sel);} else if(a==="next"){sel=(playing+1)%CH.length;play(sel);}
+  if(a==="up"||a==="dn"){ const L=$("chlist"); L.classList.remove("hide"); L.scrollBy({top:(a==="up"?-1:1)*L.clientHeight*.75}); hideListLater(8000); }
+  else if(a==="prev"){sel=(playing-1+CH.length)%CH.length;play(sel);} else if(a==="next"){sel=(playing+1)%CH.length;play(sel);}
   else if(a==="list"){ if($("chlist").classList.contains("hide")) showList(); else $("chlist").classList.add("hide"); } else closeTV();});
 $("chlist").addEventListener("mouseenter",()=>clearTimeout(listTimer));
 $("chlist").addEventListener("mouseleave",()=>{ if(playing>=0){clearTimeout(listTimer);listTimer=setTimeout(()=>$("chlist").classList.add("hide"),6000);} });
