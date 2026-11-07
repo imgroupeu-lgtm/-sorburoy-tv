@@ -285,6 +285,8 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 html.webos *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;animation:none!important;transition:none!important}
 html.webos .panel{background:rgba(9,24,36,.88)}
 html.webos .tvbar{display:flex}
+html.onlytv .tvclose,html.onlytv .tvbar [data-a=close],html.onlytv .screen,html.onlytv .touchnav{display:none!important}
+html.onlytv body{background:#000}
 html.webos #tv{z-index:9}
 html.webos .tvhelp{display:none}
 html.webos .chcount{font-size:calc(1*var(--u))}
@@ -490,7 +492,7 @@ html.webos .touchnav button:hover,html.webos .tvclose:hover,html.webos .seaclose
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261107173615";
+const BUILD="20261107174849";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD){ try{if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} location.replace(location.pathname+"?v="+m[1]); }}catch(e){}}
@@ -501,6 +503,9 @@ const $=id=>document.getElementById(id);
 if(/web0s|webos|netcast/i.test(navigator.userAgent)) document.documentElement.classList.add("webos");
 const fmtT=d=>d.toLocaleTimeString("lt-LT",{timeZone:TZ,hour:"2-digit",minute:"2-digit"});
 try{if(/[?&]app=1/.test(location.search))sessionStorage.setItem("app","?app=1");}catch(e){}
+let ONLY_TV=false;
+try{ if(/[?&]only=tv/.test(location.search)) sessionStorage.setItem("onlytv","1"); ONLY_TV=sessionStorage.getItem("onlytv")==="1"; }catch(e){ ONLY_TV=/[?&]only=tv/.test(location.search); }
+if(ONLY_TV) document.documentElement.classList.add("onlytv");
 const IS_WEBOS=document.documentElement.classList.contains("webos");
 const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches||IS_WEBOS;
 
@@ -1253,8 +1258,8 @@ $("tvbar").addEventListener("click",e=>{const b=e.target.closest("button");if(!b
 $("chlist").addEventListener("mouseenter",()=>clearTimeout(listTimer));
 $("chlist").addEventListener("mouseleave",()=>{ if(playing>=0){clearTimeout(listTimer);listTimer=setTimeout(()=>$("chlist").classList.add("hide"),6000);} });
 function openTV(){ tvOn=true; $("tv").hidden=false; renderList(); showList(); if(playing<0) play(sel); }
-function closeTV(){ tvOn=false; stop(); playing=-1; $("tv").hidden=true; }
-try{const q=new URLSearchParams(location.search);if(q.has("tv")){const n=+q.get("ch");if(n>0&&n<=CH.length)sel=n-1;setTimeout(openTV,500);}}catch(e){}
+function closeTV(){ if(ONLY_TV){ showList(); return; } tvOn=false; stop(); playing=-1; $("tv").hidden=true; }
+try{const q=new URLSearchParams(location.search);if(q.has("tv")||ONLY_TV){const n=+q.get("ch");if(n>0&&n<=CH.length)sel=n-1;setTimeout(openTV,500);}}catch(e){}
 try{if(sessionStorage.getItem("reopenTV")){sessionStorage.removeItem("reopenTV");setTimeout(openTV,500);}}catch(e){}
 const KEY={up:["ArrowUp"],down:["ArrowDown"],ok:["Enter"," "],back:["Backspace","Escape","GoBack","BrowserBack","XF86Back"],
   left:["ArrowLeft"],right:["ArrowRight"],chUp:["ChannelUp","PageUp"],chDown:["ChannelDown","PageDown"]};
