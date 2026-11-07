@@ -183,6 +183,8 @@ table.wk{width:100%;border-collapse:separate;border-spacing:0 calc(.3*var(--u));
 /* TV mode */
 #tv{position:fixed;inset:0;z-index:5;background:#000;display:flex}
 #tv video,#tv iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+#tv iframe{pointer-events:none}
+html.tvon .screen,html.tvon #sky{visibility:hidden}
 .chlist{position:absolute;left:0;top:0;bottom:0;width:calc(27*var(--u));padding:calc(2*var(--u)) calc(1.4*var(--u));display:flex;flex-direction:column;gap:calc(.3*var(--u));
   background:linear-gradient(90deg,rgba(4,14,22,.94),rgba(4,14,22,.82) 80%,rgba(4,14,22,0));overflow-y:auto;scrollbar-width:none;transition:transform .35s ease,opacity .35s ease}
 .chcount{font-size:12px;color:var(--ink-2);opacity:.8}
@@ -498,10 +500,10 @@ html.webos .touchnav button:hover,html.webos .tvclose:hover,html.webos .seaclose
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261107175655";
+const BUILD="20261107180819";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
-  const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD){ try{if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} location.replace(location.pathname+"?v="+m[1]); }}catch(e){}}
+  const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD){ try{ if(sessionStorage.getItem("triedBuild")===m[1]) return; sessionStorage.setItem("triedBuild",m[1]); if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} const q=new URLSearchParams(location.search); q.set("v",m[1]); location.replace(location.pathname+"?"+q); }}catch(e){}}
 setInterval(checkUpdate,5*60e3); setTimeout(checkUpdate,3e3);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkUpdate();});
 window.addEventListener("pageshow",e=>{if(e.persisted)checkUpdate();});
@@ -510,8 +512,9 @@ if(/web0s|webos|netcast/i.test(navigator.userAgent)) document.documentElement.cl
 const fmtT=d=>d.toLocaleTimeString("lt-LT",{timeZone:TZ,hour:"2-digit",minute:"2-digit"});
 try{if(/[?&]app=1/.test(location.search))sessionStorage.setItem("app","?app=1");}catch(e){}
 let ONLY_TV=false;
-try{ if(/[?&]only=tv/.test(location.search)) sessionStorage.setItem("onlytv","1"); ONLY_TV=sessionStorage.getItem("onlytv")==="1"; }catch(e){ ONLY_TV=/[?&]only=tv/.test(location.search); }
+try{ if(/[?&]only=0/.test(location.search)) sessionStorage.removeItem("onlytv"); if(/[?&]only=tv/.test(location.search)) sessionStorage.setItem("onlytv","1"); ONLY_TV=sessionStorage.getItem("onlytv")==="1"; }catch(e){ ONLY_TV=/[?&]only=tv/.test(location.search); }
 if(ONLY_TV) document.documentElement.classList.add("onlytv");
+let APP=false; try{APP=/[?&]app=1/.test(location.search+(sessionStorage.getItem("app")||""));}catch(e){APP=/[?&]app=1/.test(location.search);}
 const IS_WEBOS=document.documentElement.classList.contains("webos");
 const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches||IS_WEBOS;
 
@@ -519,7 +522,7 @@ const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches||IS_WEBOS;
 const S={wind:4,dir:225,cloud:50,precip:0,code:2,sunrise:null,sunset:null,tide:.5};
 
 /* ---------- clock ---------- */
-function tick(){
+function tick(){ if(document.documentElement.classList.contains("tvon")) return;
   const n=new Date();
   const p=new Intl.DateTimeFormat("lt-LT",{timeZone:TZ,hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).formatToParts(n);
   const g=t=>p.find(x=>x.type===t).value;
@@ -595,7 +598,7 @@ async function loadWeather(){
         <td><span class="wchip" style="background:${windColor(D.wind_speed_10m_max[i])}">${Math.round(D.wind_speed_10m_max[i])}</span><span class="gst">${Math.round(D.wind_gusts_10m_max[i])}</span></td>
         <td class="pr">${pr>=0.1?pr.toFixed(1)+" mm":"–"}</td></tr>`;}).join("");
     $("upd").textContent="atnaujinta "+fmtT(new Date());
-  }catch(e){ $("cond").innerHTML=`<span class="err">Orų nepavyko gauti. Bandysiu vėl po 5 min.</span>`; setTimeout(loadWeather,300000); }
+  }catch(e){ $("cond").innerHTML=`<span class="err">Orų nepavyko gauti. Bandysiu vėl po 5 min.</span>`; clearTimeout(window.__wxR); window.__wxR=setTimeout(loadWeather,300000); }
 }
 
 /* ---------- sea wind, next 4 h in 15-min steps ---------- */
@@ -875,7 +878,7 @@ async function loadTide(){
     tides=[...x.querySelectorAll("waterlevel")].map(w=>({t:new Date(w.getAttribute("time")),v:+w.getAttribute("value"),high:w.getAttribute("flag")==="high"}));
     if(tides.length<2) throw new Error("no data");
     drawTide();
-  }catch(e){ $("tidelist").innerHTML=`<span class="err">Potvynių duomenų nepavyko gauti. Bandysiu vėl po 10 min.</span>`; setTimeout(loadTide,600000); }
+  }catch(e){ $("tidelist").innerHTML=`<span class="err">Potvynių duomenų nepavyko gauti. Bandysiu vėl po 10 min.</span>`; clearTimeout(window.__tdR); window.__tdR=setTimeout(loadTide,600000); }
 }
 function levelAt(t){ // cosine interpolation between successive high/low extremes
   for(let i=0;i<tides.length-1;i++){
@@ -1233,9 +1236,12 @@ function renderList(){
   $("chlist").innerHTML=html+`<div class="tvhelp">▲▼ kanalas · OK rodyti · ◀ atgal į ekraną · skaičiai – kanalo nr.</div>`;
   const el=$("ch"+sel); if(el) el.scrollIntoView({block:"nearest"});
 }
-function showList(){ $("chlist").classList.remove("hide"); clearTimeout(listTimer); if(playing>=0) listTimer=setTimeout(()=>$("chlist").classList.add("hide"),6000); }
+function hideListLater(ms){ clearTimeout(listTimer); if(playing>=0) listTimer=setTimeout(()=>{ if(!$("chlist").matches(":hover")) $("chlist").classList.add("hide"); else hideListLater(4000); },ms||6000); }
+function showList(){ $("chlist").classList.remove("hide"); hideListLater(6000); }
 function banner(name,text){ $("bname").textContent=name;$("btext").textContent=text;$("banner").classList.remove("hide");clearTimeout(banTimer);banTimer=setTimeout(()=>$("banner").classList.add("hide"),4000); }
 function stop(){ if(hls){hls.destroy();hls=null;} const v=$("vid"); v.removeAttribute("src"); v.load(); $("yt").src="about:blank"; $("yt").hidden=true; }
+function tryPlay(v){ v.muted=false; v.play().catch(err=>{ if(err&&err.name==="NotAllowedError"){ v.muted=true; v.play().catch(()=>{}); banner("🔇 Garsas išjungtas","paspausk ekraną, kad įsijungtų"); } }); }
+addEventListener("click",()=>{const v=$("vid"); if(tvOn&&v.muted){v.muted=false;}},true);
 function play(i){
   stop(); playing=i; const c=CH[i]; $("tvmsg").textContent="Jungiamasi…";
   try{localStorage.setItem("ch",i);}catch(e){}
@@ -1247,25 +1253,26 @@ function play(i){
   v.onplaying=()=>{$("tvmsg").textContent="";clearTimeout(window.__failT);};
   const fail=()=>{$("tvmsg").textContent=`${c.n} šiuo metu nerodo. Pasirink kitą kanalą.`;};
   if(window.Hls&&Hls.isSupported()){
-    hls=new Hls({lowLatencyMode:false,maxBufferLength:20});
-    hls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal){if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else fail();}});
+    hls=new Hls({lowLatencyMode:false,maxBufferLength:20,maxMaxBufferLength:30,backBufferLength:30,capLevelToPlayerSize:true}); let rec=0;
+    hls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal){if(d.type===Hls.ErrorTypes.MEDIA_ERROR&&rec++<2){hls.recoverMediaError();}else fail();}});
     hls.loadSource(c.u); hls.attachMedia(v);
-    hls.on(Hls.Events.MANIFEST_PARSED,()=>v.play().catch(()=>{}));
-  } else if(v.canPlayType("application/vnd.apple.mpegurl")){ v.src=c.u; v.onerror=fail; v.play().catch(()=>{}); }
+    hls.on(Hls.Events.MANIFEST_PARSED,()=>tryPlay(v));
+  } else if(v.canPlayType("application/vnd.apple.mpegurl")){ v.src=c.u; v.onerror=fail; tryPlay(v); }
   else fail();
   renderList(); showList();
 }
 $("chlist").addEventListener("click",e=>{const el=e.target.closest(".ch");if(!el)return;e.stopPropagation();sel=+el.id.slice(2);play(sel);});
 $("tvclose").addEventListener("click",e=>{e.stopPropagation();closeTV();});
 $("tv").addEventListener("click",()=>{showList();});
-["chup","chdn"].forEach(id=>$(id).addEventListener("click",e=>{e.stopPropagation();const L=$("chlist");L.scrollBy({top:(id==="chup"?-1:1)*L.clientHeight*.8});clearTimeout(listTimer);}));
+["chup","chdn"].forEach(id=>$(id).addEventListener("click",e=>{e.stopPropagation();const L=$("chlist");L.scrollBy({top:(id==="chup"?-1:1)*L.clientHeight*.8});hideListLater(8000);}));
 $("tvbar").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;e.stopPropagation();const a=b.dataset.a;
   if(a==="prev"){sel=(playing-1+CH.length)%CH.length;play(sel);} else if(a==="next"){sel=(playing+1)%CH.length;play(sel);}
   else if(a==="list"){ if($("chlist").classList.contains("hide")) showList(); else $("chlist").classList.add("hide"); } else closeTV();});
 $("chlist").addEventListener("mouseenter",()=>clearTimeout(listTimer));
 $("chlist").addEventListener("mouseleave",()=>{ if(playing>=0){clearTimeout(listTimer);listTimer=setTimeout(()=>$("chlist").classList.add("hide"),6000);} });
-function openTV(){ tvOn=true; $("tv").hidden=false; renderList(); showList(); if(playing<0) play(sel); }
-function closeTV(){ if(ONLY_TV){ showList(); return; } tvOn=false; stop(); playing=-1; $("tv").hidden=true; }
+function moveSel(n){ const o=$("ch"+sel); if(o)o.classList.remove("sel"); sel=n; const el=$("ch"+sel); if(el){el.classList.add("sel"); el.scrollIntoView({block:"nearest"});} else renderList(); }
+function openTV(){ tvOn=true; document.documentElement.classList.add("tvon"); $("tv").hidden=false; renderList(); showList(); if(playing<0) play(sel); }
+function closeTV(){ if(ONLY_TV){ showList(); return; } tvOn=false; document.documentElement.classList.remove("tvon"); stop(); playing=-1; $("tv").hidden=true; try{loadBoat();loadWeather();}catch(e){} }
 try{const q=new URLSearchParams(location.search);if(q.has("tv")||ONLY_TV){const n=+q.get("ch");if(n>0&&n<=CH.length)sel=n-1;setTimeout(openTV,500);}}catch(e){}
 try{if(sessionStorage.getItem("reopenTV")){sessionStorage.removeItem("reopenTV");setTimeout(openTV,500);}}catch(e){}
 const KEY={up:["ArrowUp"],down:["ArrowDown"],ok:["Enter"," "],back:["Backspace","Escape","GoBack","BrowserBack","XF86Back"],
@@ -1273,7 +1280,7 @@ const KEY={up:["ArrowUp"],down:["ArrowDown"],ok:["Enter"," "],back:["Backspace",
 const is=(e,k)=>KEY[k].includes(e.key)||(k==="back"&&[461,10009,8,27].includes(e.keyCode))||(k==="chUp"&&e.keyCode===427)||(k==="chDown"&&e.keyCode===428);
 addEventListener("keydown",e=>{
   // LG browser: arrows/OK steer the pointer, so outside TV mode only BACK is handled here; buttons are clicked
-  if(document.documentElement.classList.contains("webos") && !/[?&]app=1/.test(location.search+(sessionStorage.getItem("app")||"")) && !tvOn){ if(seaOn&&is(e,"back")){e.preventDefault();closeSea();} return; }
+  if(IS_WEBOS && !APP && !tvOn){ if(seaOn&&is(e,"back")){e.preventDefault();closeSea();} return; }
   if(!tvOn && seaOn){ if(is(e,"back")||is(e,"left")||is(e,"right")){e.preventDefault();closeSea();} else if(is(e,"ok")){e.preventDefault();closeSea();openTV();} return; }
   if(!tvOn && !seaOn && (is(e,"up")||is(e,"down"))){ e.preventDefault(); $("boat").scrollBy({top:(is(e,"down")?1:-1)*$("boat").clientHeight*.6,behavior:"smooth"}); return; }
   if(!tvOn && is(e,"right")){ e.preventDefault(); openSea(); return; }
@@ -1281,8 +1288,8 @@ addEventListener("keydown",e=>{
   const listOpen=!$("chlist").classList.contains("hide");
   if(/^[0-9]$/.test(e.key)){ numBuf+=e.key; clearTimeout(numTimer); banner(numBuf,"kanalas");
     numTimer=setTimeout(()=>{const n=+numBuf-1;numBuf="";if(n>=0&&n<CH.length){sel=n;play(n);}},1200); e.preventDefault(); return; }
-  if(is(e,"up")){ if(listOpen) {sel=(sel-1+CH.length)%CH.length;renderList();} showList(); e.preventDefault(); }
-  else if(is(e,"down")){ if(listOpen) {sel=(sel+1)%CH.length;renderList();} showList(); e.preventDefault(); }
+  if(is(e,"up")){ if(listOpen) moveSel((sel-1+CH.length)%CH.length); showList(); e.preventDefault(); }
+  else if(is(e,"down")){ if(listOpen) moveSel((sel+1)%CH.length); showList(); e.preventDefault(); }
   else if(is(e,"chUp")){ sel=(playing+1)%CH.length; play(sel); e.preventDefault(); }
   else if(is(e,"chDown")){ sel=(playing-1+CH.length)%CH.length; play(sel); e.preventDefault(); }
   else if(is(e,"ok")){ if(listOpen&&sel!==playing) play(sel); else showList(); e.preventDefault(); }
@@ -1291,12 +1298,13 @@ addEventListener("keydown",e=>{
 });
 
 /* ---------- start ---------- */
-drawCal(); setInterval(drawCal,60e3);
-loadWeather(); loadTide(); loadWaves();
-setInterval(loadWaves,30*60e3);
-loadObs(); setInterval(loadObs,5*60e3);
-loadAlerts(); setInterval(loadAlerts,15*60e3);
-loadBoat(); setInterval(loadBoat,60e3);
+const live=f=>()=>{ if(!tvOn) f(); };
+if(!ONLY_TV){ drawCal(); loadWeather(); loadTide(); loadWaves(); }
+setInterval(live(drawCal),60e3);
+setInterval(live(loadWaves),30*60e3);
+if(!ONLY_TV) loadObs(); setInterval(live(loadObs),5*60e3);
+if(!ONLY_TV) loadAlerts(); setInterval(live(loadAlerts),15*60e3);
+if(!ONLY_TV) loadBoat(); setInterval(live(loadBoat),60e3);
 let TG_CX=new Set();
 const tgKey=(quay,iso)=>quay.replace(/ (hurtigbåt)?kai$/i,"").toLowerCase()+"|"+new Date(iso).toISOString().slice(0,16);
 async function loadAvvik(){
@@ -1312,16 +1320,16 @@ async function loadAvvik(){
     const changed=[...cx].join()!==[...TG_CX].join(); TG_CX=cx; if(changed) loadBoat();}catch(e){}
   $("avvik").innerHTML=html;
 }
-loadAvvik(); setInterval(loadAvvik,5*60e3);
+if(!ONLY_TV) loadAvvik(); setInterval(live(loadAvvik),5*60e3);
 // keep a phone/tablet screen awake while the page is open
 let wl=null;async function wake(){try{wl=await navigator.wakeLock?.request("screen");}catch(e){}}
 wake();document.addEventListener("visibilitychange",()=>{if(!document.hidden)wake();});addEventListener("click",wake,{once:true});
-setInterval(loadWeather,15*60e3);
-setInterval(loadTide,6*3600e3);
-setInterval(()=>{if(tides.length)drawTide()},60e3);
+setInterval(live(loadWeather),15*60e3);
+setInterval(live(loadTide),6*3600e3);
+setInterval(live(()=>{if(tides.length)drawTide()}),60e3);
 addEventListener("resize",()=>{if(tides.length)drawTide()});
 // full reload once a day at ~04:00 to keep an always-on screen fresh
-setInterval(()=>{const h=new Date().toLocaleString("en-US",{timeZone:TZ,hour:"numeric",hour12:false});if(h==="4")location.reload()},3600e3);
+setInterval(()=>{const h=new Date().toLocaleString("en-US",{timeZone:TZ,hour:"numeric",hour12:false});if(h==="4"){try{if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} location.reload();}},3600e3);
 </script>
 </body>
 </html>
