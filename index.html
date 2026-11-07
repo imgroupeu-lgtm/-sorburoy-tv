@@ -485,14 +485,14 @@ html.webos .touchnav button:hover,html.webos .tvclose:hover,html.webos .seaclose
   <div class="banner hide" id="banner"><span class="bn" id="bname"></span><span class="bt" id="btext"></span></div>
   <nav class="chlist" id="chlist"></nav>
   <button type="button" class="tvclose" id="tvclose">✕ Uždaryti</button>
-  <nav class="tvbar" id="tvbar"><button type="button" data-a="prev">▲ Ankstesnis</button><button type="button" data-a="list">☰ Kanalų sąrašas</button><button type="button" data-a="next">▼ Kitas</button><button type="button" data-a="close">✕ Į ekraną</button></nav>
+  <nav class="tvbar" id="tvbar"><button type="button" data-a="list">☰ Kanalų sąrašas</button><button type="button" data-a="prev">▲ Ankstesnis</button><button type="button" data-a="next">▼ Kitas</button><button type="button" data-a="close">✕ Į ekraną</button></nav>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261107174849";
+const BUILD="20261107175432";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD){ try{if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} location.replace(location.pathname+"?v="+m[1]); }}catch(e){}}
