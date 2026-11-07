@@ -284,6 +284,11 @@ table.st{width:100%;border-collapse:separate;border-spacing:0 calc(.25*var(--u))
 }
 html.webos *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;animation:none!important;transition:none!important}
 html.webos .panel{background:rgba(9,24,36,.88)}
+.chpg{display:none;position:absolute;z-index:8;left:calc(27.6*var(--u));width:calc(6.5*var(--u));padding:calc(1.2*var(--u)) 0;font:600 calc(1.1*var(--u))/1.25 var(--body);color:var(--ink);background:rgba(7,22,32,.9);border:1px solid var(--glass-edge);border-radius:calc(.8*var(--u));cursor:pointer;text-align:center}
+.chpg:hover{background:rgba(127,220,198,.4)}
+#chup{top:calc(2*var(--u))} #chdn{bottom:calc(5*var(--u))}
+html.webos .chpg{display:block}
+html.webos .chlist.hide ~ .chpg{display:none}
 html.webos .tvbar{display:flex}
 html.onlytv .tvclose,html.onlytv .tvbar [data-a=close],html.onlytv .screen,html.onlytv .touchnav{display:none!important}
 html.onlytv body{background:#000}
@@ -484,6 +489,7 @@ html.webos .touchnav button:hover,html.webos .tvclose:hover,html.webos .seaclose
   <div class="tvmsg" id="tvmsg"></div>
   <div class="banner hide" id="banner"><span class="bn" id="bname"></span><span class="bt" id="btext"></span></div>
   <nav class="chlist" id="chlist"></nav>
+  <button type="button" class="chpg" id="chup">▲<br>aukštyn</button><button type="button" class="chpg" id="chdn">▼<br>žemyn</button>
   <button type="button" class="tvclose" id="tvclose">✕ Uždaryti</button>
   <nav class="tvbar" id="tvbar"><button type="button" data-a="list">☰ Kanalų sąrašas</button><button type="button" data-a="prev">▲ Ankstesnis</button><button type="button" data-a="next">▼ Kitas</button><button type="button" data-a="close">✕ Į ekraną</button></nav>
 </div>
@@ -492,7 +498,7 @@ html.webos .touchnav button:hover,html.webos .tvclose:hover,html.webos .seaclose
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261107175432";
+const BUILD="20261107175655";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD){ try{if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} location.replace(location.pathname+"?v="+m[1]); }}catch(e){}}
@@ -1252,6 +1258,7 @@ function play(i){
 $("chlist").addEventListener("click",e=>{const el=e.target.closest(".ch");if(!el)return;e.stopPropagation();sel=+el.id.slice(2);play(sel);});
 $("tvclose").addEventListener("click",e=>{e.stopPropagation();closeTV();});
 $("tv").addEventListener("click",()=>{showList();});
+["chup","chdn"].forEach(id=>$(id).addEventListener("click",e=>{e.stopPropagation();const L=$("chlist");L.scrollBy({top:(id==="chup"?-1:1)*L.clientHeight*.8});clearTimeout(listTimer);}));
 $("tvbar").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;e.stopPropagation();const a=b.dataset.a;
   if(a==="prev"){sel=(playing-1+CH.length)%CH.length;play(sel);} else if(a==="next"){sel=(playing+1)%CH.length;play(sel);}
   else if(a==="list"){ if($("chlist").classList.contains("hide")) showList(); else $("chlist").classList.add("hide"); } else closeTV();});
