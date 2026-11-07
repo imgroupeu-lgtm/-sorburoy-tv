@@ -504,7 +504,7 @@ html.webos .touchnav button:hover,html.webos .tvclose:hover,html.webos .seaclose
 
 <script>
 const LAT=63.9769, LON=9.0637, TZ="Europe/Oslo";
-const BUILD="20261107181118";
+const BUILD="20261107181128";
 // reload when a newer version is published (phones and installed apps otherwise keep the old copy)
 async function checkUpdate(){try{const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const BUILD="([^"]+)"/); if(m&&m[1]!==BUILD){ try{ if(sessionStorage.getItem("triedBuild")===m[1]) return; sessionStorage.setItem("triedBuild",m[1]); if(tvOn)sessionStorage.setItem("reopenTV","1");}catch(e){} const q=new URLSearchParams(location.search); q.set("v",m[1]); location.replace(location.pathname+"?"+q); }}catch(e){}}
@@ -1244,7 +1244,7 @@ function hideListLater(ms){ clearTimeout(listTimer); if(playing>=0) listTimer=se
 function showList(){ $("chlist").classList.remove("hide"); hideListLater(6000); }
 function banner(name,text){ $("bname").textContent=name;$("btext").textContent=text;$("banner").classList.remove("hide");clearTimeout(banTimer);banTimer=setTimeout(()=>$("banner").classList.add("hide"),4000); }
 function stop(){ if(hls){hls.destroy();hls=null;} const v=$("vid"); v.removeAttribute("src"); v.load(); $("yt").src="about:blank"; $("yt").hidden=true; }
-function tryPlay(v){ v.muted=false; v.play().catch(err=>{ if(err&&err.name==="NotAllowedError"){ v.muted=true; v.play().catch(()=>{}); banner("🔇 Garsas išjungtas","paspausk ekraną, kad įsijungtų"); } }); }
+function tryPlay(v){ v.muted=false; v.play().catch(err=>{ if(err&&err.name==="NotAllowedError"){ v.muted=true; v.play().catch(()=>{}); banner("🔇 Be garso","paspausk ekraną"); } }); }
 addEventListener("click",()=>{const v=$("vid"); if(tvOn&&v.muted){v.muted=false;}},true);
 function play(i){
   stop(); playing=i; const c=CH[i]; $("tvmsg").textContent="Jungiamasi…";
