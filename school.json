@@ -1,11 +1,10 @@
 {
- "updated": "2026-11-12T11:17+01:00",
+ "updated": "2026-11-12T19:29+01:00",
  "date": "2026-11-18",
  "reasons": [],
- "notes": [],
- "wind": 12,
- "gust": 16,
- "feels": -2,
+ "notes": [
+  "orų prognozės gauti nepavyko (URLError)"
+ ],
  "alerts": [],
  "boats": [
   {
@@ -14,5 +13,5 @@
    "cancelled": false
   }
  ],
- "verdict": "warn"
+ "verdict": "ok"
 }
