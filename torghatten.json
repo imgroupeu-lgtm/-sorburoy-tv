@@ -1,13 +1,13 @@
 {
- "updated": "2026-11-12T02:30Z",
+ "updated": "2026-11-12T10:17Z",
  "source": "https://www.torghatten.no/en/our-routes/deviations",
  "announcements_total": 9,
  "items": [
   {
    "line": "Dyrøy - Øyrekken",
-   "type": "VesselChange",
-   "text": "MS Frovær vil betjene rute 820 fra og med avgang kl. 08:20 fra Dyrøya onsdag 11.11.2026.",
-   "updated": "2026-11-10T17:06:35.902911Z",
+   "type": "InformationForTravellers",
+   "text": "Minner om ruteendring, og nye rutetabeller fra og med mandag 16.11.",
+   "updated": "2026-11-12T07:57:40.660542Z",
    "departures": []
   }
  ]
