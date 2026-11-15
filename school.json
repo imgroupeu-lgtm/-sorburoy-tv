@@ -1,9 +1,9 @@
 {
- "updated": "2026-11-14T23:49+01:00",
+ "updated": "2026-11-15T03:17+01:00",
  "date": "2026-11-18",
  "reasons": [],
  "notes": [
-  "orų prognozės gauti nepavyko (HTTPError)"
+  "orų prognozės gauti nepavyko (URLError)"
  ],
  "alerts": [],
  "boats": [
