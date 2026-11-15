@@ -1,8 +1,51 @@
 {
- "updated": "2026-11-15T16:35Z",
+ "updated": "2026-11-15T21:16Z",
  "source": "https://www.torghatten.no/en/our-routes/deviations",
  "announcements_total": 10,
  "items": [
+  {
+   "line": "Dyrøy - Øyrekken",
+   "type": "DelayOrCancellation",
+   "text": "Alle avganger fra kl. 19:35 innstilles pga. været",
+   "updated": "2026-11-15T17:46:28.019179Z",
+   "departures": [
+    {
+     "from": "Dyrøy kai",
+     "to": "Mausundvær kai",
+     "dep": "2026-11-15T18:35:00Z",
+     "arr": "2026-11-15T18:55:00Z",
+     "cancelled": true
+    },
+    {
+     "from": "Mausundvær kai",
+     "to": "Gjæsingen kai",
+     "dep": "2026-11-15T18:55:00Z",
+     "arr": "2026-11-15T19:25:00Z",
+     "cancelled": true
+    },
+    {
+     "from": "Gjæsingen kai",
+     "to": "Sørburøy hurtigbåtkai",
+     "dep": "2026-11-15T19:25:00Z",
+     "arr": "2026-11-15T19:50:00Z",
+     "cancelled": true
+    },
+    {
+     "from": "Sørburøy hurtigbåtkai",
+     "to": "Bogøyvær hurtigbåtkai",
+     "dep": "2026-11-15T19:50:00Z",
+     "arr": "2026-11-15T20:45:00Z",
+     "cancelled": true
+    },
+    {
+     "from": "Bogøyvær hurtigbåtkai",
+     "to": "Sula hurtigbåtkai",
+     "dep": "2026-11-15T20:45:00Z",
+     "arr": "2026-11-15T21:00:00Z",
+     "cancelled": true
+    }
+   ]
+  },
   {
    "line": "Dyrøy - Øyrekken",
    "type": "InformationForTravellers",
