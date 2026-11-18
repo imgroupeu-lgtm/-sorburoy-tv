@@ -1,18 +1,12 @@
 {
- "updated": "2026-11-18T02:27+01:00",
+ "updated": "2026-11-18T09:50+01:00",
  "date": "2026-11-18",
  "reasons": [],
  "notes": [],
- "wind": 7,
- "gust": 11,
- "feels": -5,
+ "wind": 6,
+ "gust": 9,
+ "feels": -4,
  "alerts": [],
- "boats": [
-  {
-   "time": "09:20",
-   "to": "Dyrøy kai",
-   "cancelled": false
-  }
- ],
+ "boats": [],
  "verdict": "ok"
 }
